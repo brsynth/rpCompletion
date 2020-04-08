@@ -16,7 +16,7 @@ services:
 volumes:
   cache:
     external:
-      name: rpcache_cache
+      name: ${COMPOSE_PROJECT_NAME}_cache
   input_cache:
     external:
-      name: rpcache_input_cache
+      name: ${COMPOSE_PROJECT_NAME}_input_cache
