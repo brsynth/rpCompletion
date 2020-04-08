@@ -3,7 +3,7 @@ version: '2.4'
 services:
 
   rpreader:
-    image: brsynth/rpreader
+    image: brsynth/${COMPOSE_PROJECT_NAME}
     build:
       context: ..
       dockerfile: docker/Dockerfile
