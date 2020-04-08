@@ -6,21 +6,16 @@ if [[ "$outdir" == "" ]]; then
   outdir="out/test"
 fi
 
-python3 ../src/RetroPath2.py \
-  -sinkfile in/Galaxy177-Sink_Compounds.csv \
-  -sourcefile in/Galaxy160-Source.csv \
-  -max_steps 3 \
-  -rulesfile in/empty_file.csv \
-  -topx 100 \
-  -dmin 0 \
-  -dmax 1000 \
-  -mwmax_source 1000 \
-  -mwmax_cof 1000 \
-  -timeout 30 \
-  -outdir $outdir \
-  -is_forward False
+python3 ../src/rpReader.py \
+  -rp2paths_compounds in/rp2paths_compounds.tsv \
+  -rp2_pathways in/rp2_pathways.csv \
+  -rp2paths_pathways in/rp2paths_pathways.csv \
+  -output $outdir
 
-#mv test_out_scope.csv out/
 
-# -sinkfile test_input_sink.dat \
-# -sourcefile test_input_source.dat \
+  # -upper_flux_bound in/empty_file.csv \
+  # -lower_flux_bound 100 \
+  # -maxRuleIds 0 \
+  # -pathway_id 1000 \
+  # -compartment_id 1000 \
+  # -species_group_id 1000 \
