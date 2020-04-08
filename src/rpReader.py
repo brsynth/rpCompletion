@@ -1,10 +1,11 @@
-# import csv
+import csv
 # import os
 # import itertools
 # import pickle
 # import gzip
 # from rdkit.Chem import MolFromSmiles, MolFromInchi, MolToSmiles, MolToInchi, MolToInchiKey, AddHs
-# import sys
+import sys
+import argparse
 # import random
 # #import json
 # import copy
@@ -37,39 +38,6 @@ class rpReader(rpCache):
     ############################# PRIVATE FUNCTIONS #######################
     #######################################################################
 
-    # ## Convert chemical depiction to others type of depictions
-    # #
-    # # Usage example:
-    # # - convert_depiction(idepic='CCO', otype={'inchi', 'smiles', 'inchikey'})
-    # # - convert_depiction(idepic='InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3', itype='inchi', otype={'inchi', 'smiles', 'inchikey'})
-    # #
-    # #  @param self The onject pointer
-    # #  @param idepic string depiction to be converted, str
-    # #  @param itype type of depiction provided as input, str
-    # #  @param otype types of depiction to be generated, {"", "", ..}
-    # #  @return odepic generated depictions, {"otype1": "odepic1", ..}
-    # def _convert_depiction(self, idepic, itype='smiles', otype={'inchikey'}):
-    #     # Import (if needed)
-    #     if itype == 'smiles':
-    #         rdmol = MolFromSmiles(idepic, sanitize=True)
-    #     elif itype == 'inchi':
-    #         rdmol = MolFromInchi(idepic, sanitize=True)
-    #     else:
-    #         raise NotImplementedError('"{}" is not a valid input type'.format(itype))
-    #     if rdmol is None:  # Check imprt
-    #         raise NotImplementedError('Import error from depiction "{}" of type "{}"'.format(idepic, itype))
-    #     # Export
-    #     odepic = dict()
-    #     for item in otype:
-    #         if item == 'smiles':
-    #             odepic[item] = MolToSmiles(rdmol)  # MolToSmiles is tricky, one mays want to check the possible options..
-    #         elif item == 'inchi':
-    #             odepic[item] = MolToInchi(rdmol)
-    #         elif item == 'inchikey':
-    #             odepic[item] = MolToInchiKey(rdmol)
-    #         else:
-    #             raise NotImplementedError('"{}" is not a valid output type'.format(otype))
-    #     return odepic
 
 
     ###############################################################
@@ -1164,3 +1132,75 @@ class rpReader(rpCache):
 		#should be only one
 		measured_sbml = glob.glob(tmpOutputFolder+'/*.sbml')[0]
     '''
+
+
+def build_parser():
+    parser = argparse.ArgumentParser('Python wrapper to parse RP2 to generate rpSBML collection')
+    parser.add_argument('-rp2paths_compounds', type=str)
+    parser.add_argument('-rp2_pathways', type=str)
+    parser.add_argument('-rp2paths_pathways', type=str)
+    parser.add_argument('-upper_flux_bound', type=int, default=999999)
+    parser.add_argument('-lower_flux_bound', type=int, default=0)
+    parser.add_argument('-maxRuleIds', type=int, default=2)
+    parser.add_argument('-pathway_id', type=str, default='rp_pathway')
+    parser.add_argument('-compartment_id', type=str, default='MNXC3')
+    parser.add_argument('-species_group_id', type=str, default='central_species')
+    parser.add_argument('-output', type=str)
+
+    return parser
+
+def entrypoint(params=sys.argv[1:]):
+    parser = build_parser()
+
+    args = parser.parse_args(params)
+    print("PARSER")
+    print(args)
+
+    if args.maxRuleIds<0:
+        logging.error('Max rule ID cannot be less than 0: '+str(params.maxRuleIds))
+        exit(1)
+        outputTar_bytes = io.BytesIO()
+        #### MEM #####
+        """
+        if not rp2Reader_mem(rpreader,
+                    rp2paths_compounds,
+                    rp2_pathways,
+                    rp2paths_pathways,
+                    int(upper_flux_bound),
+                    int(lower_flux_bound),
+                    int(maxRuleIds),
+                    pathway_id,
+                    compartment_id,
+                    species_group_id,
+                    outputTar):
+            abort(204)
+        """
+    rpreader = rpReader()
+    rpsbml_paths = rpreader.rp2ToSBML(
+                             args.rp2paths_compounds,
+                             args.rp2_pathways,
+                             args.rp2paths_pathways,
+                             int(args.upper_flux_bound),
+                             int(args.lower_flux_bound),
+                             int(args.maxRuleIds),
+                             args.pathway_id,
+                             args.compartment_id,
+                             args.species_group_id
+                             )
+
+    print(rpsbml_paths)
+
+##
+#
+#
+if __name__ == "__main__":
+
+    entrypoint()
+
+    # if not isOK:
+    #     logging.error('Function returned an error')
+    # ########IMPORTANT######
+    # outputTar_bytes.seek(0)
+    # #######################
+    # with open(outputTar, 'wb') as f:
+    #     shutil.copyfileobj(outputTar_bytes, f, length=131072)
