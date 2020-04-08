@@ -1,6 +1,6 @@
 import csv
 # import os
-# import itertools
+from itertools import product as itertools_product
 # import pickle
 # import gzip
 # from rdkit.Chem import MolFromSmiles, MolFromInchi, MolToSmiles, MolToInchi, MolToInchiKey, AddHs
@@ -266,7 +266,7 @@ class rpReader(rpCache):
                 sub_path_step += 1
         #### pathToSBML ####
         try:
-            mnxc = self.nameCompXref[compartment_id]
+            mnxc = self.name_compXref[compartment_id]
         except KeyError:
             self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
             return False
@@ -276,7 +276,7 @@ class rpReader(rpCache):
             #first level is the list of lists of sub_steps
             #second is itertools all possible combinations using product
             altPathNum = 1
-            for comb_path in list(itertools.product(*[[(i,y) for y in rp_paths[pathNum][i]] for i in rp_paths[pathNum]])):
+            for comb_path in list(itertools_product(*[[(i,y) for y in rp_paths[pathNum][i]] for i in rp_paths[pathNum]])):
                 steps = []
                 for i, y in comb_path:
                     steps.append(rp_paths[pathNum][i][y])
@@ -536,7 +536,7 @@ class rpReader(rpCache):
         ########### create the SBML's ########
         ######################################
         try:
-            mnxc = self.nameCompXref[compartment_id]
+            mnxc = self.name_compXref[compartment_id]
         except KeyError:
             self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
             return False
@@ -545,7 +545,7 @@ class rpReader(rpCache):
             #first level is the list of lists of sub_steps
             #second is itertools all possible combinations using product
             altPathNum = 1
-            for comb_path in list(itertools.product(*[[(i,y) for y in rp_paths[pathNum][i]] for i in rp_paths[pathNum]])):
+            for comb_path in list(itertools_product(*[[(i,y) for y in rp_paths[pathNum][i]] for i in rp_paths[pathNum]])):
                 steps = []
                 for i, y in comb_path:
                     steps.append(rp_paths[pathNum][i][y])
@@ -828,7 +828,7 @@ class rpReader(rpCache):
         #TODO: need to exit at this loop
         for path_id in data:
             try:
-                mnxc = self.nameCompXref[compartment_id]
+                mnxc = self.name_compXref[compartment_id]
             except KeyError:
                 self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
                 return False
@@ -1124,7 +1124,7 @@ class rpReader(rpCache):
 		rpreader.rr_reactions = rpcache.rr_reactions
 		rpreader.chemXref = rpcache.chemXref
 		rpreader.compXref = rpcache.compXref
-		rpreader.nameCompXref = rpcache.nameCompXref
+		rpreader.name_compXref = rpcache.name_compXref
 		##################
 		#measured_pathway = parseValidation(tmpOutputFolder+'/tmp_input.csv')
 		measured_sbml_paths = rpreader.validationToSBML(tmpOutputFolder+'/tmp_input.tsv',
@@ -1153,8 +1153,6 @@ def entrypoint(params=sys.argv[1:]):
     parser = build_parser()
 
     args = parser.parse_args(params)
-    print("PARSER")
-    print(args)
 
     if args.maxRuleIds<0:
         logging.error('Max rule ID cannot be less than 0: '+str(params.maxRuleIds))
@@ -1180,6 +1178,7 @@ def entrypoint(params=sys.argv[1:]):
                              args.rp2paths_compounds,
                              args.rp2_pathways,
                              args.rp2paths_pathways,
+                             None,
                              int(args.upper_flux_bound),
                              int(args.lower_flux_bound),
                              int(args.maxRuleIds),
