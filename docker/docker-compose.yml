@@ -1,0 +1,22 @@
+version: '2.4'
+
+services:
+
+  rpreader:
+    image: brsynth/rpreader
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+#    container_name: rpReader
+    restart: always
+    volumes:
+      - cache:/home/cache
+      - input_cache:/home/input_cache
+
+volumes:
+  cache:
+    external:
+      name: rpcache_cache
+  input_cache:
+    external:
+      name: rpcache_input_cache
