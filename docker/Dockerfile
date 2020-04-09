@@ -1,4 +1,4 @@
-FROM brsynth/rpcache
+FROM brsynth/rpcache-advanced
 
 COPY docker/requirements.txt .
 # install requirements
