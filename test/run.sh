@@ -1,12 +1,18 @@
 #!/bin/bash
 
+DEBUG='OFF'
+
 outdir=$1
 
 if [[ "$outdir" == "" ]]; then
   outdir="out/test"
 fi
 
-python3 ../src/rpReader.py \
+if [[ "$DEBUG" == "ON" ]]; then
+  pdb="-m pdb "
+fi
+
+python3 $pdb ../src/rpReader.py \
   -rp2paths_compounds in/rp2paths_compounds.tsv \
   -rp2_pathways in/rp2_pathways.csv \
   -rp2paths_pathways in/rp2paths_pathways.csv \
