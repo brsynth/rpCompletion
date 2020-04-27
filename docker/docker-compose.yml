@@ -12,6 +12,8 @@ services:
     volumes:
       - cache:/home/cache
       - input_cache:/home/input_cache
+    networks:
+      - db
 
 volumes:
   cache:
@@ -20,3 +22,8 @@ volumes:
   input_cache:
     external:
       name: ${RPCACHE}_input_cache
+
+networks:
+  db:
+    external:
+      name: rpcache_db

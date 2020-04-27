@@ -2,7 +2,7 @@
 
 cd ../docker
 docker-compose run --rm -v $PWD/../test:/home/test -w /home/test --entrypoint="" rpreader \
-  sh -c "ln -sf . ../src ; ./run.sh out/test-in-docker"
+  sh -c "./run.sh out/test-in-docker db"
 cd -
 
 

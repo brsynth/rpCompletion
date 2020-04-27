@@ -15,8 +15,10 @@ import logging
 # import re
 # #import tarfile
 
+sys.path.insert(0, '/home/rpCache')
 import rpSBML
 from rpCache import rpCache
+from rpCache import add_arguments as rpCache_add_arguments
 
 ## @package rpReader
 #
@@ -29,8 +31,8 @@ class rpReader(rpCache):
     ## InputReader constructor
     #
     #  @param self The object pointer
-    def __init__(self):
-        super().__init__()
+    def __init__(self, db='file', print_infos=False):
+        super().__init__(db, print_infos)
         self.logger = logging.getLogger(__name__)
         self.logger.info('Starting instance of rpReader')
 
@@ -1386,9 +1388,7 @@ class rpReader(rpCache):
 		measured_sbml = glob.glob(tmpOutputFolder+'/*.sbml')[0]
     '''
 
-
-def build_parser():
-    parser = argparse.ArgumentParser('Python wrapper to parse RP2 to generate rpSBML collection')
+def add_arguments(parser):
     parser.add_argument('-rp2paths_compounds', type=str)
     parser.add_argument('-rp2_pathways', type=str)
     parser.add_argument('-rp2paths_pathways', type=str)
@@ -1399,6 +1399,12 @@ def build_parser():
     parser.add_argument('-compartment_id', type=str, default='MNXC3')
     parser.add_argument('-species_group_id', type=str, default='central_species')
     parser.add_argument('-output', type=str)
+    return parser
+
+def build_parser():
+    parser = argparse.ArgumentParser('Python wrapper to parse RP2 to generate rpSBML collection')
+    parser = rpCache_add_arguments(parser)
+    parser = add_arguments(parser)
 
     return parser
 
@@ -1426,7 +1432,7 @@ def entrypoint(params=sys.argv[1:]):
                     outputTar):
             abort(204)
         """
-    rpreader = rpReader()
+    rpreader = rpReader(args.store_mode, args.print)
     rpsbml_paths = rpreader.rp2ToSBML(
                              args.rp2paths_compounds,
                              args.rp2_pathways,
