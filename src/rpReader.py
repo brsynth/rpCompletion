@@ -1488,7 +1488,7 @@ def entrypoint(params=sys.argv[1:]):
 #
 if __name__ == "__main__":
 
-    entrypoint()
+    entrypoint(sys.argv[1:])
 
     # if not isOK:
     #     logging.error('Function returned an error')
