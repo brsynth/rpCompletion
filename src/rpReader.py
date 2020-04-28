@@ -13,10 +13,15 @@ import argparse
 import logging
 # import io
 # import re
-# #import tarfile
+#import tarfile
 
-sys.path.insert(0, '/home/rpCache')
+from os import path as os_path
+from os import mkdir as os_mkdir
+
+
+sys.path.insert(0, '/home/rpReader/rpSBML')
 import rpSBML
+sys.path.insert(0, '/home/rpCache')
 from rpCache import rpCache
 from rpCache import add_arguments as rpCache_add_arguments
 
@@ -290,6 +295,7 @@ class rpReader(rpCache):
         next(reader)
         current_path_id = 0
         path_step = 1
+
         for row in reader:
             try:
                 if not int(row[0])==current_path_id:
@@ -369,14 +375,17 @@ class rpReader(rpCache):
                     rp_paths[int(row[0])][int(path_step)] = {}
                 rp_paths[int(row[0])][int(path_step)][int(sub_path_step)] = tmpReac
                 sub_path_step += 1
+
         #### pathToSBML ####
         try:
             mnxc = self.name_compXref[compartment_id]
         except KeyError:
             self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
             return False
+
         #for pathNum in self.rp_paths:
         sbml_paths = {}
+
         for pathNum in rp_paths:
             #first level is the list of lists of sub_steps
             #second is itertools all possible combinations using product
@@ -538,6 +547,7 @@ class rpReader(rpCache):
                 else:
                     sbml_paths['rp_'+str(step['path_id'])+'_'+str(altPathNum)] = rpsbml
                 altPathNum += 1
+
         return sbml_paths
 
 
@@ -1437,7 +1447,7 @@ def entrypoint(params=sys.argv[1:]):
                              args.rp2paths_compounds,
                              args.rp2_pathways,
                              args.rp2paths_pathways,
-                             None,
+                             args.output,
                              int(args.upper_flux_bound),
                              int(args.lower_flux_bound),
                              int(args.maxRuleIds),
@@ -1446,7 +1456,32 @@ def entrypoint(params=sys.argv[1:]):
                              args.species_group_id
                              )
 
+    return
+
     print(rpsbml_paths)
+    #pass the SBML results to a tar
+    if rpsbml_paths=={}:
+        return False
+
+    # if not os_path.exists(args.output):
+    #     os_mkdir(args.output)
+    #
+    # for rpsbml_name in rpsbml_paths:
+    #     f = open(args.output+"/"+rpsbml_name+".xml","w+")
+    #     f.write(rpsbml_paths[rpsbml_name].document.toSBML())
+    #     f.close()
+
+    return True
+
+    #outputTar = io.BytesIO()
+    #with open(outputTar, 'w:xz') as tf:
+    with tarfile.open(fileobj=args.output+"/test.tar", mode='w:xz') as tf:
+        for rpsbml_name in rpsbml_paths:
+            data = libsbml.writeSBMLToString(rpsbml_paths[rpsbml_name].document).encode('utf-8')
+            fiOut = io.BytesIO(data)
+            info = tarfile.TarInfo(name=rpsbml_name)
+            info.size = len(data)
+            tf.addfile(tarinfo=info, fileobj=fiOut)
 
 ##
 #
