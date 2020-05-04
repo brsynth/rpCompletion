@@ -1448,7 +1448,7 @@ def entrypoint(params=sys.argv[1:]):
     outdir = os_path.dirname(args.output)+'/tar'
     if os_path.exists(outdir):
         shutil_rmtree(outdir)
-    os_mkdir(outdir)        
+    os_mkdir(outdir)
     rpsbml_paths = rpreader.rp2ToSBML(
                              args.rp2paths_compounds,
                              args.rp2_pathways,
@@ -1461,26 +1461,6 @@ def entrypoint(params=sys.argv[1:]):
                              args.compartment_id,
                              args.species_group_id
                              )
-
-    # return
-    #
-    # print(rpsbml_paths)
-    # #pass the SBML results to a tar
-    # if rpsbml_paths=={}:
-    #     return False
-    #
-    # # if not os_path.exists(args.output):
-    # #     os_mkdir(args.output)
-    # #
-    # # for rpsbml_name in rpsbml_paths:
-    # #     f = open(args.output+"/"+rpsbml_name+".xml","w+")
-    # #     f.write(rpsbml_paths[rpsbml_name].document.toSBML())
-    # #     f.close()
-    #
-    # return True
-
-    #outputTar = io.BytesIO()
-    #with open(outputTar, 'w:xz') as tf:
 
 
     with tarfile.open(fileobj=args.output, mode='w:xz') as tf:
