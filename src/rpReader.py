@@ -1445,15 +1445,13 @@ def entrypoint(params=sys.argv[1:]):
             abort(204)
         """
     rpreader = rpReader(args.store_mode, args.print)
-    outdir = os_path.dirname(args.output)+'/tar'
-    if os_path.exists(outdir):
-        shutil_rmtree(outdir)
-    os_mkdir(outdir)
+    if not os_path.exists(args.output):
+        os_mkdir(args.output)
     rpsbml_paths = rpreader.rp2ToSBML(
                              args.rp2paths_compounds,
                              args.rp2_pathways,
                              args.rp2paths_pathways,
-                             outdir,
+                             args.output,
                              int(args.upper_flux_bound),
                              int(args.lower_flux_bound),
                              int(args.maxRuleIds),
@@ -1463,9 +1461,9 @@ def entrypoint(params=sys.argv[1:]):
                              )
 
 
-    with tarfile.open(fileobj=args.output, mode='w:xz') as tf:
-        tf.add(outdir, arcname=os_path.basename(args.output))
-    shutil_rmtree(outdir)
+    # with tarfile.open(fileobj=args.output, mode='w:xz') as tf:
+    #     tf.add(outdir, arcname=os_path.basename(args.output))
+    # shutil_rmtree(outdir)
         # for rpsbml_name in rpsbml_paths:
         #     data = libsbml.writeSBMLToString(rpsbml_paths[rpsbml_name].document).encode('utf-8')
         #     fiOut = io.BytesIO(data)
