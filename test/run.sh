@@ -4,7 +4,7 @@ DEBUG='OFF'
 
 outdir=$1
 if [[ "$outdir" == "" ]]; then
-  outdir="out/test"
+  outdir="out"
 fi
 
 sm=$2
