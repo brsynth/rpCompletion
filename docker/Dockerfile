@@ -1,4 +1,4 @@
-FROM brsynth/rpcache
+FROM brsynth/rpcache-new
 
 #COPY requirements.txt .
 # install requirements
