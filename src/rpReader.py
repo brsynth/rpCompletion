@@ -1410,6 +1410,7 @@ def add_arguments(parser):
     parser.add_argument('-pathway_id', type=str, default='rp_pathway')
     parser.add_argument('-compartment_id', type=str, default='MNXC3')
     parser.add_argument('-species_group_id', type=str, default='central_species')
+    parser.add_argument('-pubchem_search', type=str, default='False')
     parser.add_argument('-output', type=str)
     return parser
 
@@ -1420,44 +1421,37 @@ def build_parser():
 
     return parser
 
-def entrypoint(params=sys.argv[1:]):
+def entrypoint(args=sys.argv[1:]):
     parser = build_parser()
 
-    args = parser.parse_args(params)
+    params = parser.parse_args(args)
 
-    if args.maxRuleIds<0:
+    if params.maxRuleIds<0:
         logging.error('Max rule ID cannot be less than 0: '+str(params.maxRuleIds))
         exit(1)
-        outputTar_bytes = io.BytesIO()
-        #### MEM #####
-        """
-        if not rp2Reader_mem(rpreader,
-                    rp2paths_compounds,
-                    rp2_pathways,
-                    rp2paths_pathways,
-                    int(upper_flux_bound),
-                    int(lower_flux_bound),
-                    int(maxRuleIds),
-                    pathway_id,
-                    compartment_id,
-                    species_group_id,
-                    outputTar):
-            abort(204)
-        """
-    rpreader = rpReader(args.store_mode, args.print)
-    if not os_path.exists(args.output):
-        os_mkdir(args.output)
+    if params.pubchem_search=='True' or params.pubchem_search=='T' or params.pubchem_search=='true' or params.pubchem_search=='t':
+        pubchem_search = True
+    elif params.pubchem_search=='False' or params.pubchem_search=='F' or params.pubchem_search=='false' or params.pubchem_search=='f':
+        pubchem_search = False
+    else:
+        logging.error('Cannot interpret pubchem_search input: '+str(params.pubchem_search))
+        exit(1)
+
+    rpreader = rpReader(params.store_mode, params.print)
+    if not os_path.exists(params.output):
+        os_mkdir(params.output)
     rpsbml_paths = rpreader.rp2ToSBML(
-                             args.rp2paths_compounds,
-                             args.rp2_pathways,
-                             args.rp2paths_pathways,
-                             args.output,
-                             int(args.upper_flux_bound),
-                             int(args.lower_flux_bound),
-                             int(args.maxRuleIds),
-                             args.pathway_id,
-                             args.compartment_id,
-                             args.species_group_id
+                             params.rp2paths_compounds,
+                             params.rp2_pathways,
+                             params.rp2paths_pathways,
+                             params.output,
+                             int(params.upper_flux_bound),
+                             int(params.lower_flux_bound),
+                             int(params.maxRuleIds),
+                             params.pathway_id,
+                             params.compartment_id,
+                             params.species_group_id,
+                             params.pubchem_search
                              )
 
 
