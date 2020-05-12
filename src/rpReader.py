@@ -87,9 +87,9 @@ class rpReader(rpCache):
     def _pubchemStrctSearch(self, strct, itype='inchi'):
         self._pubChemLimit()
         try:
-            print()
-            print("REQUEST")
-            print()
+            # print()
+            # print("REQUEST")
+            # print()
             r = requests.post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
         except requests.exceptions.ConnectionError as e:
             self.logger.warning('Overloading PubChem, waiting 5 seconds and trying again')
