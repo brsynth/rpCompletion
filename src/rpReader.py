@@ -1,25 +1,16 @@
 import csv
 from os import path as os_path
 from shutil import rmtree as shutil_rmtree
-# import os
 from itertools import product as itertools_product
-# import pickle
-# import gzip
-# from rdkit.Chem import MolFromSmiles, MolFromInchi, MolToSmiles, MolToInchi, MolToInchiKey, AddHs
 import sys
 import argparse
-# import random
-# #import json
-# import copy
-# #from .setup_self.logger import self.logger
 import logging
-# import io
-# import re
 import tarfile
 
 from os import path as os_path
 from os import mkdir as os_mkdir
-
+from time import time as time_time
+from time import sleep as time_sleep
 
 sys.path.insert(0, '/home/rpReader/rpSBML')
 import rpSBML
@@ -58,10 +49,10 @@ class rpReader(rpCache):
     def _pubChemLimit(self):
         '''
         if self.pubchem_sec_start==0.0:
-            self.pubchem_sec_start = time.time()
+            self.pubchem_sec_start = time_time()
         '''
         if self.pubchem_min_start==0.0:
-            self.pubchem_min_start = time.time()
+            self.pubchem_min_start = time_time()
         #self.pubchem_sec_count += 1
         self.pubchem_min_count += 1
         '''
@@ -75,13 +66,13 @@ class rpReader(rpCache):
             self.pubchem_sec_count = 0
         '''
         #### requests per minute ####
-        if self.pubchem_min_count>=500 and time.time()-self.pubchem_min_start<=60.0:
+        if self.pubchem_min_count>=500 and time_time()-self.pubchem_min_start<=60.0:
             logging.warning('Reached 500 requests per minute for pubchem... waiting a minute')
-            time.sleep(60.0)
-            self.pubchem_min_start = time.time()
+            time_sleep(60.0)
+            self.pubchem_min_start = time_time()
             self.pubchem_min_count = 0
-        elif time.time()-self.pubchem_min_start>60.0:
-            self.pubchem_min_start = time.time()
+        elif time_time()-self.pubchem_min_start>60.0:
+            self.pubchem_min_start = time_time()
             self.pubchem_min_count = 0
 
     ## Try to retreive the xref from an inchi structure using pubchem
@@ -102,7 +93,7 @@ class rpReader(rpCache):
             r = requests.post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
         except requests.exceptions.ConnectionError as e:
             self.logger.warning('Overloading PubChem, waiting 5 seconds and trying again')
-            time.sleep(5)
+            time_sleep(5)
             try:
                 r = requests.post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
             except requests.exceptions.ConnectionError as e:
