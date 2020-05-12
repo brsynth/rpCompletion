@@ -5,6 +5,7 @@ from itertools import product as itertools_product
 import sys
 import argparse
 import logging
+import request
 
 from os import path as os_path
 from os import mkdir as os_mkdir
