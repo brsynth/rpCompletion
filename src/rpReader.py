@@ -1,7 +1,4 @@
 import csv
-from os import path as os_path
-from shutil import rmtree as shutil_rmtree
-from itertools import product as itertools_product
 import sys
 import argparse
 import logging
@@ -9,6 +6,8 @@ import requests
 
 from os import path as os_path
 from os import mkdir as os_mkdir
+from shutil import rmtree as shutil_rmtree
+from itertools import product as itertools_product
 from time import time as time_time
 from time import sleep as time_sleep
 
@@ -17,6 +16,8 @@ import rpSBML
 sys.path.insert(0, '/home/rpCache')
 from rpCache import rpCache
 from rpCache import add_arguments as rpCache_add_arguments
+
+import rpCofactors
 
 ## @package rpReader
 #
@@ -38,6 +39,7 @@ class rpReader(rpCache):
     #  @param self The object pointer
     def __init__(self, db='file', print_infos=False):
         super().__init__(db, print_infos)
+        self.rpcofactors = rpCofactors.rpCofactors(self.store_mode, self.print)
         self.logger = logging.getLogger(__name__)
         self.logger.info('Starting instance of rpReader')
 
@@ -493,6 +495,77 @@ class rpReader(rpCache):
 
         return (chemName, spe)
 
+    def _normalize_pathway(self, pathway):
+
+        # level = document.getLevel()
+        # version = document.getVersion()
+
+        model = pathway.document
+
+        # if model is None:
+        #    print("No model present." )
+        #    return 1
+
+        # idString = "  id: "
+        # if level == 1:
+        #  idString = "name: "
+        # id = "(empty)"
+        # if model.isSetId():
+        #  id = model.getId()
+
+
+        # Read RP Annotations
+        groups = model.getPlugin('groups')
+
+        # Get Reactions
+        reactions = {}
+        for pathway_id in pathway.readRPpathwayIDs('rp_pathway'):
+            object = model.getReaction(pathway_id)
+            reactions[pathway_id] = rpSBML.readBRSYNTHAnnotation(object.getAnnotation())
+        # for member in groups.getGroup('rp_pathway').getListOfMembers():
+        #     object = model.getReaction(member.getIdRef())
+        #     reactions[member.getIdRef()] = rpSBML.readBRSYNTHAnnotation(object.getAnnotation())
+
+
+        # Get Species
+        species = {}
+        for specie in model.getListOfSpecies():
+            species[specie.getId()] = rpSBML.readBRSYNTHAnnotation(specie.getAnnotation())
+
+        # print()
+        # print("REACTIONS")
+        # print(reactions)
+        # print()
+        # print("SPECIES")
+        # print(species)
+        # print()
+
+        # Pathways dict
+        norm_pathway = {}
+
+        # Select Reactions already loaded (w/o Sink one then)
+        for reaction in reactions:
+
+            norm_pathway[reactions[reaction]['smiles']] = {}
+
+            # Fill the reactants in a dedicated dict
+            d_reactants = {}
+            for reactant in model.getReaction(reaction).getListOfReactants():#inchikey / inchi sinon miriam sinon IDs
+                # Il faut enregistrer toutes les infos (inchi, miriam, ids)
+                d_reactants[species[reactant.getSpecies()]['inchikey']] = reactant.getStoichiometry()
+            # Put all reactants dicts in reactions dict for which smiles notations are the keys
+            norm_pathway[reactions[reaction]['smiles']]['Reactants'] = d_reactants
+
+            # Fill the products in a dedicated dict
+            d_products = {}
+            for product in model.getReaction(reaction).getListOfProducts():
+                d_products[species[product.getSpecies()]['inchikey']] = product.getStoichiometry()
+            # Put all products dicts in reactions dict for which smiles notations are the keys
+            norm_pathway[reactions[reaction]['smiles']]['Products'] = d_products
+
+        return norm_pathway
+
+
     #TODO: make sure that you account for the fact that each reaction may have multiple associated reactions
     ## Function to parse the out_paths.csv file
     #
@@ -517,7 +590,16 @@ class rpReader(rpCache):
             species_group_id='central_species',
             pubchem_search=False):
 
+        maxRuleIds = sys.maxsize
         rp_paths = self._read_paths(rp2paths_outPath, maxRuleIds)
+
+        # for each line:
+        #     generate comb
+        #     for each combinant:
+        #         rank
+        #         process
+        #         add cofactors
+        #         dedup
 
         #### pathToSBML ####
         try:
@@ -603,6 +685,10 @@ class rpReader(rpCache):
                         lower_flux_bound,
                         targetStep,
                         compartment_id)
+
+                self.rpcofactors.addCofactors(rpsbml)
+                norm_pathway = self._normalize_pathway(rpsbml)
+                print(norm_pathway)
 
                 #6) Add the flux objectives
                 sbml_paths['rp_'+str(path_id)+'_'+str(altPathNum)] = rpsbml
