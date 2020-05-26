@@ -12,7 +12,7 @@ from time import time as time_time
 from time import sleep as time_sleep
 
 sys.path.insert(0, '/home/rpReader/rpSBML')
-import rpSBML
+from rpSBML import rpSBML
 sys.path.insert(0, '/home/rpCache')
 from rpCache import rpCache
 from rpCache import add_arguments as rpCache_add_arguments
@@ -495,75 +495,6 @@ class rpReader(rpCache):
 
         return (chemName, spe)
 
-    def _normalize_pathway(self, pathway):
-
-        # level = document.getLevel()
-        # version = document.getVersion()
-
-        model = pathway.document
-
-        # if model is None:
-        #    print("No model present." )
-        #    return 1
-
-        # idString = "  id: "
-        # if level == 1:
-        #  idString = "name: "
-        # id = "(empty)"
-        # if model.isSetId():
-        #  id = model.getId()
-
-
-        # Read RP Annotations
-        groups = model.getPlugin('groups')
-
-        # Get Reactions
-        reactions = {}
-        for pathway_id in pathway.readRPpathwayIDs('rp_pathway'):
-            object = model.getReaction(pathway_id)
-            reactions[pathway_id] = rpSBML.readBRSYNTHAnnotation(object.getAnnotation())
-        # for member in groups.getGroup('rp_pathway').getListOfMembers():
-        #     object = model.getReaction(member.getIdRef())
-        #     reactions[member.getIdRef()] = rpSBML.readBRSYNTHAnnotation(object.getAnnotation())
-
-
-        # Get Species
-        species = {}
-        for specie in model.getListOfSpecies():
-            species[specie.getId()] = rpSBML.readBRSYNTHAnnotation(specie.getAnnotation())
-
-        # print()
-        # print("REACTIONS")
-        # print(reactions)
-        # print()
-        # print("SPECIES")
-        # print(species)
-        # print()
-
-        # Pathways dict
-        norm_pathway = {}
-
-        # Select Reactions already loaded (w/o Sink one then)
-        for reaction in reactions:
-
-            norm_pathway[reactions[reaction]['smiles']] = {}
-
-            # Fill the reactants in a dedicated dict
-            d_reactants = {}
-            for reactant in model.getReaction(reaction).getListOfReactants():#inchikey / inchi sinon miriam sinon IDs
-                # Il faut enregistrer toutes les infos (inchi, miriam, ids)
-                d_reactants[species[reactant.getSpecies()]['inchikey']] = reactant.getStoichiometry()
-            # Put all reactants dicts in reactions dict for which smiles notations are the keys
-            norm_pathway[reactions[reaction]['smiles']]['Reactants'] = d_reactants
-
-            # Fill the products in a dedicated dict
-            d_products = {}
-            for product in model.getReaction(reaction).getListOfProducts():
-                d_products[species[product.getSpecies()]['inchikey']] = product.getStoichiometry()
-            # Put all products dicts in reactions dict for which smiles notations are the keys
-            norm_pathway[reactions[reaction]['smiles']]['Products'] = d_products
-
-        return norm_pathway
 
 
     #TODO: make sure that you account for the fact that each reaction may have multiple associated reactions
@@ -622,7 +553,7 @@ class rpReader(rpCache):
                 for i, y in comb_path:
                     steps.append(rp_paths[pathNum][i][y])
                 path_id = steps[0]['path_id']
-                rpsbml = rpSBML.rpSBML('rp_'+str(path_id)+'_'+str(altPathNum))
+                rpsbml = rpSBML('rp_'+str(path_id)+'_'+str(altPathNum))
 
                 #1) create a generic Model, ie the structure and unit definitions that we will use the most
                 ##### TODO: give the user more control over a generic model creation:
@@ -687,11 +618,22 @@ class rpReader(rpCache):
                         compartment_id)
 
                 self.rpcofactors.addCofactors(rpsbml)
-                norm_pathway = self._normalize_pathway(rpsbml)
-                print(norm_pathway)
 
-                #6) Add the flux objectives
-                sbml_paths['rp_'+str(path_id)+'_'+str(altPathNum)] = rpsbml
+                already_in = False
+                for pathway in sbml_paths.values():
+                    if rpsbml==pathway:
+                        # rpsbml.writeSBML('./')
+                        # pathway.writeSBML('./out')
+                        # print()
+                        # print("DUPLICATE -- ", 'rp_'+str(path_id)+'_'+str(altPathNum))
+                        # print()
+                        already_in = True
+                        break
+
+                if not already_in:
+                    #6) Add the flux objectives
+                    sbml_paths['rp_'+str(path_id)+'_'+str(altPathNum)] = rpsbml
+
                 altPathNum += 1
 
         return sbml_paths
