@@ -10,6 +10,7 @@ from shutil import rmtree as shutil_rmtree
 from itertools import product as itertools_product
 from time import time as time_time
 from time import sleep as time_sleep
+from bisect import insort as bisect_insort
 
 sys.path.insert(0, '/home/rpReader/rpSBML')
 from rpSBML import rpSBML
@@ -23,12 +24,27 @@ import rpCofactors
 #
 # Collectoion of functions that convert the outputs from various sources to the SBML format (rpSBML) for further analyses
 
+
 class Species:
     def __init__(self, inchi, inchikey, smiles, xref):
         self.inchi = inchi
         self.inchikey = inchikey
         self.smiles = smiles
         self.xref = xref
+
+class SBML_Item:
+    def __init__(self, score, index, rpsbml_obj):
+        self.score = score
+        self.index = index
+        self.rpsbml_obj = rpsbml_obj
+
+    def __eq__(self, sbml_item):
+        return self.score == sbml_item.score
+    def __lt__(self, sbml_item):
+        return self.score < sbml_item.score
+    def __gt__(self, sbml_item):
+        return self.score > sbml_item.score
+
 
 ## Class to read all the input files
 #
@@ -160,16 +176,18 @@ class rpReader(rpCache):
     # @param compounds string path to RP2paths out_paths file
     # @param scope string path to RetroPaths2's scope file output
     # @param outPaths string path to RP2paths out_paths file
-    # @param maxRuleIds int The maximal number of members in a single substep (Reaction Rule)
+    # @param maxSubPaths_filter int The maximal number of subpaths kept in a single substep (Reaction Rule)
     # @param compartment_id string The ID of the SBML's model compartment where to add the reactions to
+    # @outFolder folder where to write files
     # @return Boolean The success or failure of the function
     def rp2ToSBML(self,
                   rp2paths_compounds,
                   rp2_pathways,
                   rp2paths_pathways,
+                  outFolder,
                   upper_flux_bound=999999,
                   lower_flux_bound=0,
-                  maxRuleIds=10,
+                  maxSubPaths_filter=10,
                   pathway_id='rp_pathway',
                   compartment_id='MNXC3',
                   species_group_id='central_species',
@@ -179,9 +197,10 @@ class rpReader(rpCache):
         return self._rp2pathsToSBML(rp_strc,
                                     rp_transformation,
                                     rp2paths_pathways,
+                                    outFolder,
                                     upper_flux_bound,
                                     lower_flux_bound,
-                                    maxRuleIds,
+                                    maxSubPaths_filter,
                                     pathway_id,
                                     compartment_id,
                                     species_group_id,
@@ -258,7 +277,7 @@ class rpReader(rpCache):
                 rp_transformation[row[1]]['ec'] = [i.replace(' ', '') for i in row[11][1:-1].split(',') if not i.replace(' ', '')=='NOEC']
         return rp_transformation
 
-    def _read_paths(self, rp2paths_outPath, maxRuleIds):
+    def _read_paths(self, rp2paths_outPath):
 
         #### we might pass binary in the REST version
         if isinstance(rp2paths_outPath, bytes):
@@ -295,15 +314,15 @@ class rpReader(rpCache):
             for r_id in ruleIds:
                 for rea_id in self.rr_reactions[r_id]:
                     tmp_rr_reactions[str(r_id)+'__'+str(rea_id)] = self.rr_reactions[r_id][rea_id]
-            if len(ruleIds)>int(maxRuleIds):
-                self.logger.warning('There are too many rules, limiting the number to random top '+str(maxRuleIds))
-                try:
-                    ruleIds = [y for y,_ in sorted([(i, tmp_rr_reactions[i]['rule_score']) for i in tmp_rr_reactions])][:int(maxRuleIds)]
-                except KeyError:
-                    self.logger.warning('Could not select topX due inconsistencies between rules ids and rr_reactions... selecting random instead')
-                    ruleIds = random.sample(tmp_rr_reactions, int(maxRuleIds))
-            else:
-                ruleIds = tmp_rr_reactions
+            # if len(ruleIds)>int(maxRuleIds):
+            #     self.logger.warning('There are too many rules, limiting the number to random top '+str(maxRuleIds))
+            #     try:
+            #         ruleIds = [y for y,_ in sorted([(i, tmp_rr_reactions[i]['rule_score']) for i in tmp_rr_reactions])][:int(maxRuleIds)]
+            #     except KeyError:
+            #         self.logger.warning('Could not select topX due inconsistencies between rules ids and rr_reactions... selecting random instead')
+            #         ruleIds = random.sample(tmp_rr_reactions, int(maxRuleIds))
+            # else:
+            ruleIds = tmp_rr_reactions
             sub_path_step = 1
             for singleRule in ruleIds:
                 tmpReac = {'rule_id': singleRule.split('__')[0],
@@ -508,29 +527,22 @@ class rpReader(rpCache):
     #  @param self Object pointer
     #  @param path The out_path.csv file path
     #  @maxRuleId maximal numer of rules associated with a step
-    #  @return toRet_rp_paths Pathway object
+    #  @outFolder folder where to write files
+    #  @return Boolean The success or failure of the function
     def _rp2pathsToSBML(self,
-            rp_strc,
-            rp_transformation,
-            rp2paths_outPath,
-            upper_flux_bound=999999,
-            lower_flux_bound=0,
-            maxRuleIds=10,
-            pathway_id='rp_pathway',
-            compartment_id='MNXC3',
-            species_group_id='central_species',
-            pubchem_search=False):
+                        rp_strc,
+                        rp_transformation,
+                        rp2paths_outPath,
+                        outFolder,
+                        upper_flux_bound=999999,
+                        lower_flux_bound=0,
+                        maxSubPaths_filter=10,
+                        pathway_id='rp_pathway',
+                        compartment_id='MNXC3',
+                        species_group_id='central_species',
+                        pubchem_search=False):
 
-        maxRuleIds = sys.maxsize
-        rp_paths = self._read_paths(rp2paths_outPath, maxRuleIds)
-
-        # for each line:
-        #     generate comb
-        #     for each combinant:
-        #         rank
-        #         process
-        #         add cofactors
-        #         dedup
+        rp_paths = self._read_paths(rp2paths_outPath)
 
         #### pathToSBML ####
         try:
@@ -539,7 +551,7 @@ class rpReader(rpCache):
             self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
             return False
 
-        sbml_paths = {}
+        # sbml_paths = {}
 
 
         for pathNum in rp_paths:
@@ -547,6 +559,8 @@ class rpReader(rpCache):
             #first level is the list of lists of sub_steps
             #second is itertools all possible combinations using product
             altPathNum = 1
+            # topX subpaths of the current rp2path pathway
+            local_rpsbml_items = []
 
             for comb_path in list(itertools_product(*[[(i,y) for y in rp_paths[pathNum][i]] for i in rp_paths[pathNum]])):
                 steps = []
@@ -617,26 +631,63 @@ class rpReader(rpCache):
                         targetStep,
                         compartment_id)
 
+                #6) adding the cofactors
                 self.rpcofactors.addCofactors(rpsbml)
 
-                already_in = False
-                for pathway in sbml_paths.values():
-                    if rpsbml==pathway:
-                        # rpsbml.writeSBML('./')
-                        # pathway.writeSBML('./out')
-                        # print()
-                        # print("DUPLICATE -- ", 'rp_'+str(path_id)+'_'+str(altPathNum))
-                        # print()
-                        already_in = True
+                #7) filtering
+                sbml_item = SBML_Item(rpsbml.getScore(),
+                                      'rp_'+str(path_id)+'_'+str(altPathNum),
+                                      rpsbml)
+                unique = True
+
+                # For each subpath already in local_sbml_paths
+                for item in local_rpsbml_items:
+                    # Compare with the new built pathway
+                    if sbml_item.rpsbml_obj==item.rpsbml_obj:
+                        unique = False
+                        # print(rpsbml.outPathsDict())
+                        # If its score is better, then replace the one already in place
+                        if sbml_item.score > item.score:
+                            # Remove the same pathway with worse score from the list
+                            local_rpsbml_items.remove(item)
+                            # Insert at the good place the new pathway (with better score)
+                            bisect_insort(local_rpsbml_items, sbml_item)
+                        # Leave the loop
                         break
 
-                if not already_in:
-                    #6) Add the flux objectives
-                    sbml_paths['rp_'+str(path_id)+'_'+str(altPathNum)] = rpsbml
+                # If the pathway currently built is not already in local_sbml_paths
+                # The new built pathway is unique
+                if unique:
+                    # print("INSERT UNIQUE", sbml_item.score)
+                    # If its score is better, then replace the one already in place
+                    # Insert at the good place the new pathway (with better score)
+                    bisect_insort(local_rpsbml_items, sbml_item)
+
+                # Keep only topX
+                local_rpsbml_items = local_rpsbml_items[-maxSubPaths_filter:]
+
+                # print(sbml_item.index, [i.score for i in local_rpsbml_items])
+                    # print(item.rpsbml_obj.outPathsDict())
+                    # print()
 
                 altPathNum += 1
 
-        return sbml_paths
+            # for i in range(len(local_sbml_paths)):
+            #     for j in range(i+1, len(local_sbml_paths)):
+            #         if local_sbml_paths[i].rpsbml_obj == local_sbml_paths[j].rpsbml_obj:
+            #             print("NOT UNIQUE !!!")
+            #             exit()
+
+            # Write results to files
+            for rpsbml_item in local_rpsbml_items:
+                rpsbml_item.rpsbml_obj.writeSBML(outFolder)
+
+            # for item in local_rpsbml_paths:
+            #     sbml_paths[item.index] = item.rpsbml_obj
+            # sbml_paths += local_sbml_paths
+
+
+        return True
 
 
     #######################################################################
@@ -1375,7 +1426,7 @@ def add_arguments(parser):
     parser.add_argument('-rp2paths_pathways', type=str)
     parser.add_argument('-upper_flux_bound', type=int, default=999999)
     parser.add_argument('-lower_flux_bound', type=int, default=0)
-    parser.add_argument('-maxRuleIds', type=int, default=2)
+    parser.add_argument('-maxSubPaths_filter', type=int, default=10)
     parser.add_argument('-pathway_id', type=str, default='rp_pathway')
     parser.add_argument('-compartment_id', type=str, default='MNXC3')
     parser.add_argument('-species_group_id', type=str, default='central_species')
@@ -1395,8 +1446,8 @@ def entrypoint(args=sys.argv[1:]):
 
     params = parser.parse_args(args)
 
-    if params.maxRuleIds<0:
-        logging.error('Max rule ID cannot be less than 0: '+str(params.maxRuleIds))
+    if params.maxSubPaths_filter<0:
+        logging.error('Max subpaths cannot be less than 0: '+str(params.maxSubPaths_filter))
         exit(1)
     if params.pubchem_search=='True' or params.pubchem_search=='T' or params.pubchem_search=='true' or params.pubchem_search=='t':
         params.pubchem_search = True
@@ -1408,25 +1459,22 @@ def entrypoint(args=sys.argv[1:]):
     #     logging.error('Cannot interpret pubchem_search input: '+str(params.pubchem_search))
     #     exit(1)
 
+    if not os_path.exists(params.output):
+        os_mkdir(params.output)
     rpreader = rpReader(params.store_mode, params.print)
     rpsbml_paths = rpreader.rp2ToSBML(
                              params.rp2paths_compounds,
                              params.rp2_pathways,
                              params.rp2paths_pathways,
+                             params.output,
                              int(params.upper_flux_bound),
                              int(params.lower_flux_bound),
-                             int(params.maxRuleIds),
+                             int(params.maxSubPaths_filter),
                              params.pathway_id,
                              params.compartment_id,
                              params.species_group_id,
-                             params.pubchem_search
-                             )
+                             params.pubchem_search)
 
-    # Write results to files
-    if not os_path.exists(params.output):
-        os_mkdir(params.output)
-    for rpsbml_path in rpsbml_paths.values():
-        rpsbml_path.writeSBML(params.output)
 
 
     # with tarfile.open(fileobj=args.output, mode='w:xz') as tf:
