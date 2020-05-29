@@ -63,6 +63,7 @@ rpCompletion can be run into a docker container.
 ### Prerequisites
 
 * Docker - [Install](https://docs.docker.com/install/)
+* rpCache: `brsynth/rpCache <https://hub.docker.com/r/brsynth/rpcache>`_
 
 ### Build image
 Before running the container, the image has to be built with:

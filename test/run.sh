@@ -12,10 +12,10 @@ if [[ "$max_subpaths" == "" ]]; then
   max_subpaths="10"
 fi
 
-python3 $pdb ../src/rpCompletion.py \
+python3 $pdb ../src/Main.py \
   -rp2paths_compounds in/$size/rp2paths_compounds.csv \
   -rp2_pathways in/$size/rp2_pathways.csv \
   -rp2paths_pathways in/$size/rp2paths_pathways.csv \
-  -maxSubPaths_filter $max_subpaths \
+  -max_subpaths_filter $max_subpaths \
   -output out/${size}_${max_subpaths} \
   -sm db

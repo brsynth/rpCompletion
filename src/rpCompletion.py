@@ -1,21 +1,17 @@
 import csv
-import sys
 import logging
 import requests
 
-from os import path as os_path
-from os import mkdir as os_mkdir
-from shutil import rmtree as shutil_rmtree
 from itertools import product as itertools_product
 from time import time as time_time
 from time import sleep as time_sleep
 from bisect import insort as bisect_insort
 
-sys.path.insert(0, '/home/src/rpSBML')
-from rpSBML import rpSBML
-sys.path.insert(0, '/home/rpCache')
+from sys import path as sys_path
+sys_path.insert(0, '/home/rpCache')
 from rpCache import rpCache
-from rpCache import add_arguments as rpCache_add_arguments
+sys_path.insert(0, '/home/src/rpSBML')
+from rpSBML import rpSBML
 
 import rpCofactors
 
@@ -175,7 +171,7 @@ class rpCompletion(rpCache):
     # @param compounds string path to RP2paths out_paths file
     # @param scope string path to RetroPaths2's scope file output
     # @param outPaths string path to RP2paths out_paths file
-    # @param maxRuleIds int The maximal number of members in a single substep (Reaction Rule)
+    # @param max_subpaths_filter int The maximal number of subpaths per path
     # @param compartment_id string The ID of the SBML's model compartment where to add the reactions to
     # @outFolder folder where to write files
     # @return Boolean The success or failure of the function
@@ -186,7 +182,7 @@ class rpCompletion(rpCache):
                   outFolder,
                   upper_flux_bound=999999,
                   lower_flux_bound=0,
-                  maxRuleIds=10,
+                  max_subpaths_filter=10,
                   pathway_id='rp_pathway',
                   compartment_id='MNXC3',
                   species_group_id='central_species',
@@ -199,7 +195,7 @@ class rpCompletion(rpCache):
                                     outFolder,
                                     upper_flux_bound,
                                     lower_flux_bound,
-                                    maxRuleIds,
+                                    max_subpaths_filter,
                                     pathway_id,
                                     compartment_id,
                                     species_group_id,
@@ -276,7 +272,7 @@ class rpCompletion(rpCache):
                 rp_transformation[row[1]]['ec'] = [i.replace(' ', '') for i in row[11][1:-1].split(',') if not i.replace(' ', '')=='NOEC']
         return rp_transformation
 
-    def _read_paths(self, rp2paths_outPath, maxRuleIds):
+    def _read_paths(self, rp2paths_outPath):
 
         #### we might pass binary in the REST version
         if isinstance(rp2paths_outPath, bytes):
@@ -313,15 +309,15 @@ class rpCompletion(rpCache):
             for r_id in ruleIds:
                 for rea_id in self.rr_reactions[r_id]:
                     tmp_rr_reactions[str(r_id)+'__'+str(rea_id)] = self.rr_reactions[r_id][rea_id]
-            if len(ruleIds)>int(maxRuleIds):
-                self.logger.warning('There are too many rules, limiting the number to random top '+str(maxRuleIds))
-                try:
-                    ruleIds = [y for y,_ in sorted([(i, tmp_rr_reactions[i]['rule_score']) for i in tmp_rr_reactions])][:int(maxRuleIds)]
-                except KeyError:
-                    self.logger.warning('Could not select topX due inconsistencies between rules ids and rr_reactions... selecting random instead')
-                    ruleIds = random.sample(tmp_rr_reactions, int(maxRuleIds))
-            else:
-                ruleIds = tmp_rr_reactions
+            # if len(ruleIds)>int(maxRuleIds):
+            #     self.logger.warning('There are too many rules, limiting the number to random top '+str(maxRuleIds))
+            #     try:
+            #         ruleIds = [y for y,_ in sorted([(i, tmp_rr_reactions[i]['rule_score']) for i in tmp_rr_reactions])][:int(maxRuleIds)]
+            #     except KeyError:
+            #         self.logger.warning('Could not select topX due inconsistencies between rules ids and rr_reactions... selecting random instead')
+            #         ruleIds = random.sample(tmp_rr_reactions, int(maxRuleIds))
+            # else:
+            ruleIds = tmp_rr_reactions
             sub_path_step = 1
             for singleRule in ruleIds:
                 tmpReac = {'rule_id': singleRule.split('__')[0],
@@ -525,7 +521,7 @@ class rpCompletion(rpCache):
     #
     #  @param self Object pointer
     #  @param path The out_path.csv file path
-    #  @maxRuleId maximal numer of rules associated with a step
+    #  @max_subpaths_filter maximal numer of subpaths per paths
     #  @outFolder folder where to write files
     #  @return Boolean The success or failure of the function
     def _rp2pathsToSBML(self,
@@ -535,15 +531,13 @@ class rpCompletion(rpCache):
                         outFolder,
                         upper_flux_bound=999999,
                         lower_flux_bound=0,
-                        maxRuleIds=10,
+                        max_subpaths_filter=10,
                         pathway_id='rp_pathway',
                         compartment_id='MNXC3',
                         species_group_id='central_species',
                         pubchem_search=False):
 
-        maxRuleIds = sys.maxsize
-        maxPathways = 10
-        rp_paths = self._read_paths(rp2paths_outPath, maxRuleIds)
+        rp_paths = self._read_paths(rp2paths_outPath)
 
         # for each line:
         #     generate comb
@@ -673,7 +667,7 @@ class rpCompletion(rpCache):
                     bisect_insort(local_rpsbml_items, sbml_item)
 
                 # Keep only topX
-                local_rpsbml_items = local_rpsbml_items[-maxPathways:]
+                local_rpsbml_items = local_rpsbml_items[-max_subpaths_filter:]
 
                 # print(sbml_item.index, [i.score for i in local_rpsbml_items])
                     # print(item.rpsbml_obj.outPathsDict())
