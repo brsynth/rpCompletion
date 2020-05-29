@@ -12,7 +12,7 @@ from time import time as time_time
 from time import sleep as time_sleep
 from bisect import insort as bisect_insort
 
-sys.path.insert(0, '/home/rpReader/rpSBML')
+sys.path.insert(0, '/home/src/rpSBML')
 from rpSBML import rpSBML
 sys.path.insert(0, '/home/rpCache')
 from rpCache import rpCache
@@ -176,7 +176,7 @@ class rpReader(rpCache):
     # @param compounds string path to RP2paths out_paths file
     # @param scope string path to RetroPaths2's scope file output
     # @param outPaths string path to RP2paths out_paths file
-    # @param maxSubPaths_filter int The maximal number of subpaths kept in a single substep (Reaction Rule)
+    # @param maxRuleIds int The maximal number of members in a single substep (Reaction Rule)
     # @param compartment_id string The ID of the SBML's model compartment where to add the reactions to
     # @outFolder folder where to write files
     # @return Boolean The success or failure of the function
@@ -187,7 +187,7 @@ class rpReader(rpCache):
                   outFolder,
                   upper_flux_bound=999999,
                   lower_flux_bound=0,
-                  maxSubPaths_filter=10,
+                  maxRuleIds=10,
                   pathway_id='rp_pathway',
                   compartment_id='MNXC3',
                   species_group_id='central_species',
@@ -200,7 +200,7 @@ class rpReader(rpCache):
                                     outFolder,
                                     upper_flux_bound,
                                     lower_flux_bound,
-                                    maxSubPaths_filter,
+                                    maxRuleIds,
                                     pathway_id,
                                     compartment_id,
                                     species_group_id,
@@ -277,7 +277,7 @@ class rpReader(rpCache):
                 rp_transformation[row[1]]['ec'] = [i.replace(' ', '') for i in row[11][1:-1].split(',') if not i.replace(' ', '')=='NOEC']
         return rp_transformation
 
-    def _read_paths(self, rp2paths_outPath):
+    def _read_paths(self, rp2paths_outPath, maxRuleIds):
 
         #### we might pass binary in the REST version
         if isinstance(rp2paths_outPath, bytes):
@@ -314,15 +314,15 @@ class rpReader(rpCache):
             for r_id in ruleIds:
                 for rea_id in self.rr_reactions[r_id]:
                     tmp_rr_reactions[str(r_id)+'__'+str(rea_id)] = self.rr_reactions[r_id][rea_id]
-            # if len(ruleIds)>int(maxRuleIds):
-            #     self.logger.warning('There are too many rules, limiting the number to random top '+str(maxRuleIds))
-            #     try:
-            #         ruleIds = [y for y,_ in sorted([(i, tmp_rr_reactions[i]['rule_score']) for i in tmp_rr_reactions])][:int(maxRuleIds)]
-            #     except KeyError:
-            #         self.logger.warning('Could not select topX due inconsistencies between rules ids and rr_reactions... selecting random instead')
-            #         ruleIds = random.sample(tmp_rr_reactions, int(maxRuleIds))
-            # else:
-            ruleIds = tmp_rr_reactions
+            if len(ruleIds)>int(maxRuleIds):
+                self.logger.warning('There are too many rules, limiting the number to random top '+str(maxRuleIds))
+                try:
+                    ruleIds = [y for y,_ in sorted([(i, tmp_rr_reactions[i]['rule_score']) for i in tmp_rr_reactions])][:int(maxRuleIds)]
+                except KeyError:
+                    self.logger.warning('Could not select topX due inconsistencies between rules ids and rr_reactions... selecting random instead')
+                    ruleIds = random.sample(tmp_rr_reactions, int(maxRuleIds))
+            else:
+                ruleIds = tmp_rr_reactions
             sub_path_step = 1
             for singleRule in ruleIds:
                 tmpReac = {'rule_id': singleRule.split('__')[0],
@@ -536,13 +536,23 @@ class rpReader(rpCache):
                         outFolder,
                         upper_flux_bound=999999,
                         lower_flux_bound=0,
-                        maxSubPaths_filter=10,
+                        maxRuleIds=10,
                         pathway_id='rp_pathway',
                         compartment_id='MNXC3',
                         species_group_id='central_species',
                         pubchem_search=False):
 
-        rp_paths = self._read_paths(rp2paths_outPath)
+        maxRuleIds = sys.maxsize
+        maxPathways = 10
+        rp_paths = self._read_paths(rp2paths_outPath, maxRuleIds)
+
+        # for each line:
+        #     generate comb
+        #     for each combinant:
+        #         rank
+        #         process
+        #         add cofactors
+        #         dedup
 
         #### pathToSBML ####
         try:
@@ -664,7 +674,7 @@ class rpReader(rpCache):
                     bisect_insort(local_rpsbml_items, sbml_item)
 
                 # Keep only topX
-                local_rpsbml_items = local_rpsbml_items[-maxSubPaths_filter:]
+                local_rpsbml_items = local_rpsbml_items[-maxPathways:]
 
                 # print(sbml_item.index, [i.score for i in local_rpsbml_items])
                     # print(item.rpsbml_obj.outPathsDict())
@@ -1426,7 +1436,7 @@ def add_arguments(parser):
     parser.add_argument('-rp2paths_pathways', type=str)
     parser.add_argument('-upper_flux_bound', type=int, default=999999)
     parser.add_argument('-lower_flux_bound', type=int, default=0)
-    parser.add_argument('-maxSubPaths_filter', type=int, default=10)
+    parser.add_argument('-maxRuleIds', type=int, default=2)
     parser.add_argument('-pathway_id', type=str, default='rp_pathway')
     parser.add_argument('-compartment_id', type=str, default='MNXC3')
     parser.add_argument('-species_group_id', type=str, default='central_species')
@@ -1446,8 +1456,8 @@ def entrypoint(args=sys.argv[1:]):
 
     params = parser.parse_args(args)
 
-    if params.maxSubPaths_filter<0:
-        logging.error('Max subpaths cannot be less than 0: '+str(params.maxSubPaths_filter))
+    if params.maxRuleIds<0:
+        logging.error('Max rule ID cannot be less than 0: '+str(params.maxRuleIds))
         exit(1)
     if params.pubchem_search=='True' or params.pubchem_search=='T' or params.pubchem_search=='true' or params.pubchem_search=='t':
         params.pubchem_search = True
@@ -1469,7 +1479,7 @@ def entrypoint(args=sys.argv[1:]):
                              params.output,
                              int(params.upper_flux_bound),
                              int(params.lower_flux_bound),
-                             int(params.maxSubPaths_filter),
+                             int(params.maxRuleIds),
                              params.pathway_id,
                              params.compartment_id,
                              params.species_group_id,
