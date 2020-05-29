@@ -7,4 +7,4 @@ RUN python -m pip install --upgrade pip \
 
 WORKDIR /home
 
-COPY src rpReader
+COPY src src

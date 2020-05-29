@@ -2,7 +2,7 @@ version: '2.4'
 
 services:
 
-  rpreader:
+  rpcompletion:
     image: brsynth/${COMPOSE_PROJECT_NAME}
     build:
       context: ..
