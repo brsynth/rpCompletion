@@ -75,7 +75,7 @@ docker-compose build
 Then, the tool is runnable by:
 ```
 cd docker
-./rpCompletion.sh <absolute_indata_folder> [DB_HOST]
+./rpCompletion.sh <absolute_indata_folder>
 ```
 
 Inside the container, rpCompletion can be run following the Standalone Mode.
@@ -101,12 +101,9 @@ cd test
 
 
 ## How to cite rpCompletion?
-Please cite:
-
-Delépine B, Duigou T, Carbonell P, Faulon JL. RetroPath2.0: A retrosynthesis workflow for metabolic engineers. Metabolic Engineering, 45: 158-170, 2018. DOI: https://doi.org/10.1016/j.ymben.2017.12.002
 
 ## Licence
-RP2paths is released under the MIT licence. See the LICENCE.txt file for details.
+rpCompletion is released under the MIT licence. See the LICENCE.txt file for details.
 
 
-* Docker image: [brsynth/rpreader-standalone](https://hub.docker.com/r/brsynth/rpreader-standalone)
+* Docker image: [brsynth/rpcompletion](https://hub.docker.com/r/brsynth/rpcompletion)
