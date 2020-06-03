@@ -12,7 +12,7 @@ if [[ "$max_subpaths" == "" ]]; then
   max_subpaths="10"
 fi
 
-python3 $pdb ../src/run.py \
+python3 $pdb ../src/main.py \
   -rp2paths_compounds in/$size/rp2paths_compounds.csv \
   -rp2_pathways in/$size/rp2_pathways.csv \
   -rp2paths_pathways in/$size/rp2paths_pathways.csv \
