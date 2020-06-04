@@ -51,7 +51,7 @@ class rpCompletion(rpCache):
     def __init__(self, db='file', print_infos=False):
         super().__init__(db, print_infos)
         self.rpcofactors = rpCofactors.rpCofactors(self.store_mode, self.print)
-        self.logger = logging.getLogger(__name__)
+        # self.logger = logging.getLogger(__name__)
         self.logger.info('Starting instance of rpCompletion')
 
         self.pubchem_species = {}
