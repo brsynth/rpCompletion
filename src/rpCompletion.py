@@ -287,6 +287,8 @@ class rpCompletion(rpCache):
 
         for row in reader:
             try:
+                #Remove all illegal characters in SBML ids
+                row[3] = row[3].replace("'", "").replace('-', '_').replace('+', '')
                 if not int(row[0])==current_path_id:
                     path_step = 1
                 else:
