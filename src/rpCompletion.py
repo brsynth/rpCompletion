@@ -189,17 +189,17 @@ class rpCompletion(rpCache):
                   pubchem_search=False):
         rp_strc = self._compounds(rp2paths_compounds)
         rp_transformation = self._transformation(rp2_pathways)
-        return self._rp2pathsToSBML(rp_strc,
-                                    rp_transformation,
-                                    rp2paths_pathways,
-                                    outFolder,
-                                    upper_flux_bound,
-                                    lower_flux_bound,
-                                    max_subpaths_filter,
-                                    pathway_id,
-                                    compartment_id,
-                                    species_group_id,
-                                    pubchem_search)
+        return self.Write_rp2pathsToSBML(rp_strc,
+                                         rp_transformation,
+                                         rp2paths_pathways,
+                                         outFolder,
+                                         upper_flux_bound,
+                                         lower_flux_bound,
+                                         max_subpaths_filter,
+                                         pathway_id,
+                                         compartment_id,
+                                         species_group_id,
+                                         pubchem_search)
 
     ## Function to parse the compounds.txt file
     #
@@ -272,13 +272,13 @@ class rpCompletion(rpCache):
                 rp_transformation[row[1]]['ec'] = [i.replace(' ', '') for i in row[11][1:-1].split(',') if not i.replace(' ', '')=='NOEC']
         return rp_transformation
 
-    def _read_paths(self, rp2paths_outPath):
+    def _read_paths(self, rp2paths_pathways):
 
         #### we might pass binary in the REST version
-        if isinstance(rp2paths_outPath, bytes):
-            reader = csv.reader(io.StringIO(rp2paths_outPath.decode('utf-8')))
+        if isinstance(rp2paths_pathways, bytes):
+            reader = csv.reader(io.StringIO(rp2paths_pathways.decode('utf-8')))
         else:
-            reader = csv.reader(open(rp2paths_outPath, 'r'))
+            reader = csv.reader(open(rp2paths_pathways, 'r'))
         next(reader)
         current_path_id = 0
         path_step = 1
@@ -370,21 +370,6 @@ class rpCompletion(rpCache):
         return rp_paths
 
     def _unique_species(self, meta, rp_strc, pubchem_search):
-
-        # print()
-        # print()
-        # print()
-        # print()
-        # print()
-        # print("**************************************")
-        # print("**************************************")
-        # print("**************************************")
-        # print()
-        # print()
-        # print()
-        # print()
-        # print()
-
 
         try:
             chemName = self.mnxm_strc[meta]['name']
@@ -526,22 +511,21 @@ class rpCompletion(rpCache):
     #  @max_subpaths_filter maximal numer of subpaths per paths
     #  @outFolder folder where to write files
     #  @return Boolean The success or failure of the function
-    def _rp2pathsToSBML(self,
-                        rp_strc,
-                        rp_transformation,
-                        rp2paths_outPath,
-                        outFolder,
-                        upper_flux_bound=999999,
-                        lower_flux_bound=0,
-                        max_subpaths_filter=10,
-                        pathway_id='rp_pathway',
-                        compartment_id='MNXC3',
-                        species_group_id='central_species',
-                        pubchem_search=False):
+    def Write_rp2pathsToSBML(self,
+                             rp_strc, rp_transformation,
+                             rp2paths_pathways,
+                             outFolder,
+                             upper_flux_bound=999999,
+                             lower_flux_bound=0,
+                             max_subpaths_filter=10,
+                             pathway_id='rp_pathway',
+                             compartment_id='MNXC3',
+                             species_group_id='central_species',
+                             pubchem_search=False):
 
-        rp_paths = self._read_paths(rp2paths_outPath)
+        rp_paths = self._read_paths(rp2paths_pathways)
 
-        # for each line:
+        # for each line or rp2paths_pathways:
         #     generate comb
         #     for each combinant:
         #         rank
@@ -555,8 +539,6 @@ class rpCompletion(rpCache):
         except KeyError:
             self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
             return False
-
-        # sbml_paths = {}
 
 
         for pathNum in rp_paths:
@@ -574,7 +556,7 @@ class rpCompletion(rpCache):
                 path_id = steps[0]['path_id']
                 rpsbml = rpSBML('rp_'+str(path_id)+'_'+str(altPathNum))
 
-                #1) create a generic Model, ie the structure and unit definitions that we will use the most
+                #1) Create a generic Model, ie the structure and unit definitions that we will use the most
                 ##### TODO: give the user more control over a generic model creation:
                 #   -> special attention to the compartment
                 rpsbml.genericModel(
@@ -585,40 +567,31 @@ class rpCompletion(rpCache):
                         upper_flux_bound,
                         lower_flux_bound)
 
-                #2) create the pathway (groups)
+                #2) Create the pathway (groups)
                 rpsbml.createPathway(pathway_id)
                 rpsbml.createPathway(species_group_id)
 
-                #3) find all the unique species and add them to the model
+                #3) Find all unique species and add them to the model
                 all_meta = set([i for step in steps for lr in ['left', 'right'] for i in step[lr]])
                 for meta in all_meta:
                     (chemName, spe) = self._unique_species(meta, rp_strc, pubchem_search)
                     #pass the information to create the species
-                    rpsbml.createSpecies(
-                            meta,
-                            compartment_id,
-                            chemName,
-                            spe.xref,
-                            spe.inchi,
-                            spe.inchikey,
-                            spe.smiles,
-                            species_group_id)
+                    rpsbml.createSpecies(meta, compartment_id, chemName,
+                                         spe.xref, spe.inchi, spe.inchikey, spe.smiles,
+                                         species_group_id)
 
-                #4) add the complete reactions and their annotations
+                #4) Add the complete reactions and their annotations
                 for step in steps:
                     #add the substep to the model
                     step['sub_step'] = altPathNum
                     rpsbml.createReaction(
                             'RP'+str(step['step']), # parameter 'name' of the reaction deleted : 'RetroPath_Reaction_'+str(step['step']),
-                            upper_flux_bound,
-                            lower_flux_bound,
-                            step,
-                            compartment_id,
+                            upper_flux_bound, lower_flux_bound, step, compartment_id,
                             rp_transformation[step['transformation_id']]['rule'],
                             {'ec': rp_transformation[step['transformation_id']]['ec']},
                             pathway_id)
 
-                #5) adding the consumption of the target
+                #5) Adding the consumption of the target
                 targetStep = {
                         'rule_id': None,
                         'left': {[i for i in all_meta if i[:6]=='TARGET'][0]: 1},
@@ -629,17 +602,15 @@ class rpCompletion(rpCache):
                         'transformation_id': None,
                         'rule_score': None,
                         'rule_ori_reac': None}
-                rpsbml.createReaction(
-                        'RP1_sink',
-                        upper_flux_bound,
-                        lower_flux_bound,
-                        targetStep,
-                        compartment_id)
+                rpsbml.createReaction('RP1_sink',
+                                      upper_flux_bound, lower_flux_bound,
+                                      targetStep,
+                                      compartment_id)
 
-                #6) adding the cofactors
+                #6) Adding the cofactors
                 self.rpcofactors.addCofactors(rpsbml)
 
-                #7) filtering
+                #7) Filtering
                 sbml_item = SBML_Item(rpsbml.getScore(),
                                       'rp_'+str(path_id)+'_'+str(altPathNum),
                                       rpsbml)
