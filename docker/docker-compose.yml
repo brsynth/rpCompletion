@@ -3,22 +3,23 @@ version: '2.4'
 services:
 
   gen-req:
-    image: brsynth/rpcache-new
-    command: sh -c "
-        /usr/local/bin/python -m pip install --upgrade pip
-     && /usr/local/bin/python -m pip install pip-compile-multi
-     && cd /req
-     && pip-compile requirements.in > requirements.txt"
+    image: brsynth/${COMPOSE_PROJECT_NAME}.req
+    build:
+      context: ..
+      dockerfile: docker/req.dockerfile
+      args:
+        IMAGE: ${BASE_IMAGE}
+    command: pip-compile requirements.in > requirements.txt
     volumes:
       - $PWD/..:/req
 
-  rpcompletion:
+  tool:
     image: brsynth/${COMPOSE_PROJECT_NAME}
     build:
       context: ..
       dockerfile: docker/Dockerfile
-#    container_name: rpReader
-    restart: always
+      args:
+        IMAGE: ${BASE_IMAGE}
     volumes:
       - cache:/home/cache
       - input_cache:/home/input_cache

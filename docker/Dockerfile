@@ -1,4 +1,5 @@
-FROM brsynth/rpcache-new
+ARG IMAGE
+FROM ${IMAGE}
 
 COPY requirements.txt .
 # install requirements
