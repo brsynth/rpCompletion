@@ -3,7 +3,7 @@ version: '2.4'
 services:
 
   gen-req:
-    image: brsynth/rpcache-new
+    image: python:3
     command: sh -c "
         /usr/local/bin/python -m pip install --upgrade pip
      && /usr/local/bin/python -m pip install pip-compile-multi
