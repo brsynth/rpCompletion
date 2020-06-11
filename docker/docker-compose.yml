@@ -9,7 +9,7 @@ services:
       dockerfile: docker/req.dockerfile
       args:
         IMAGE: ${BASE_IMAGE}
-    command: pip-compile requirements.in > requirements.txt
+    command: sh -c 'pip-compile requirements.in > requirements.txt'
     volumes:
       - $PWD/..:/req
 
