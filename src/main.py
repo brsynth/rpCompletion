@@ -19,6 +19,7 @@ def add_arguments(parser):
     parser.add_argument('-pathway_id', type=str, default='rp_pathway')
     parser.add_argument('-compartment_id', type=str, default='MNXC3')
     parser.add_argument('-species_group_id', type=str, default='central_species')
+    parser.add_argument('-sink_species_group_id', type=str, default='rp_sink_species')
     parser.add_argument('-pubchem_search', type=str, default='False')
     parser.add_argument('-output', type=str)
     return parser
@@ -57,6 +58,7 @@ def entrypoint(args=sys_argv[1:]):
                              params.pathway_id,
                              params.compartment_id,
                              params.species_group_id,
+                             params.sink_species_group_id,
                              params.pubchem_search)
 
 

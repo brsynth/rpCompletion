@@ -186,11 +186,13 @@ class rpCompletion(rpCache):
                   pathway_id='rp_pathway',
                   compartment_id='MNXC3',
                   species_group_id='central_species',
+                  sink_species_group_id='rp_sink_species',
                   pubchem_search=False):
         rp_strc = self._compounds(rp2paths_compounds)
-        rp_transformation = self._transformation(rp2_pathways)
+        rp_transformation, sink_molecules = self._transformation(rp2_pathways)
         return self.Write_rp2pathsToSBML(rp_strc,
                                          rp_transformation,
+                                         sink_molecules,
                                          rp2paths_pathways,
                                          outFolder,
                                          upper_flux_bound,
@@ -199,6 +201,7 @@ class rpCompletion(rpCache):
                                          pathway_id,
                                          compartment_id,
                                          species_group_id,
+                                         sink_species_group_id,
                                          pubchem_search)
 
     ## Function to parse the compounds.txt file
@@ -254,6 +257,7 @@ class rpCompletion(rpCache):
     #  @param path The scope.csv file path
     def _transformation(self, path):
         rp_transformation = {}
+        sink_molecules = []
         #### we might pass binary in the REST version
         reader = None
         if isinstance(path, bytes):
@@ -270,7 +274,14 @@ class rpCompletion(rpCache):
                 rp_transformation[row[1]] = {}
                 rp_transformation[row[1]]['rule'] = row[2]
                 rp_transformation[row[1]]['ec'] = [i.replace(' ', '') for i in row[11][1:-1].split(',') if not i.replace(' ', '')=='NOEC']
-        return rp_transformation
+            if row[7]=='1':
+                for i in row[8].replace(']', '').replace('[', '').replace(' ', '').split(','):
+                    sink_molecules.append(i)
+
+        self.logger.info(rp_transformation)
+        self.logger.info(sink_molecules)
+        return rp_transformation, list(set(sink_molecules))
+
 
     def _read_paths(self, rp2paths_pathways):
 
@@ -302,7 +313,7 @@ class rpCompletion(rpCache):
             #################################
             ruleIds = row[2].split(',')
             if ruleIds==None:
-                self.logger.error('The rulesIds is None')
+                self.logger.warning('The rulesIds is None')
                 #pass # or continue
                 continue
             ###WARNING: This is the part where we select some rules over others
@@ -323,13 +334,13 @@ class rpCompletion(rpCache):
             sub_path_step = 1
             for singleRule in ruleIds:
                 tmpReac = {'rule_id': singleRule.split('__')[0],
-                        'rule_ori_reac': {'mnxr': singleRule.split('__')[1]},
-                        'rule_score': self.rr_reactions[singleRule.split('__')[0]][singleRule.split('__')[1]]['rule_score'],
-                        'right': {},
-                        'left': {},
-                        'path_id': int(row[0]),
-                        'step': path_step,
-                        'transformation_id': row[1][:-2]}
+                           'rule_ori_reac': {'mnxr': singleRule.split('__')[1]},
+                           'rule_score': self.rr_reactions[singleRule.split('__')[0]][singleRule.split('__')[1]]['rule_score'],
+                           'right': {},
+                           'left': {},
+                           'path_id': int(row[0]),
+                           'step': path_step,
+                           'transformation_id': row[1][:-2]}
                 ############ LEFT ##############
                 for l in row[3].split(':'):
                     tmp_l = l.split('.')
@@ -513,6 +524,7 @@ class rpCompletion(rpCache):
     #  @return Boolean The success or failure of the function
     def Write_rp2pathsToSBML(self,
                              rp_strc, rp_transformation,
+                             sink_molecules,
                              rp2paths_pathways,
                              outFolder,
                              upper_flux_bound=999999,
@@ -521,9 +533,11 @@ class rpCompletion(rpCache):
                              pathway_id='rp_pathway',
                              compartment_id='MNXC3',
                              species_group_id='central_species',
+                             sink_species_group_id='rp_sink_species',
                              pubchem_search=False):
 
         rp_paths = self._read_paths(rp2paths_pathways)
+        sink_species = []
 
         # for each line or rp2paths_pathways:
         #     generate comb
@@ -570,15 +584,36 @@ class rpCompletion(rpCache):
                 #2) Create the pathway (groups)
                 rpsbml.createPathway(pathway_id)
                 rpsbml.createPathway(species_group_id)
+                rpsbml.createPathway(sink_species_group_id)
 
                 #3) Find all unique species and add them to the model
                 all_meta = set([i for step in steps for lr in ['left', 'right'] for i in step[lr]])
                 for meta in all_meta:
                     (chemName, spe) = self._unique_species(meta, rp_strc, pubchem_search)
+                    if chemName:
+                        chemName = chemName.replace("'", "")
+                    self.logger.info('Creating species: '+str(chemName)+' ('+str(meta)+')')
                     #pass the information to create the species
-                    rpsbml.createSpecies(meta, compartment_id, chemName,
-                                         spe.xref, spe.inchi, spe.inchikey, spe.smiles,
-                                         species_group_id)
+                    if meta in sink_molecules:
+                        self.logger.info('Species is sink: '+str(sink_species_group_id))
+                        rpsbml.createSpecies(meta,
+                                             compartment_id,
+                                             chemName,
+                                             spe.xref,
+                                             spe.inchi,
+                                             spe.inchikey,
+                                             spe.smiles,
+                                             species_group_id,
+                                             sink_species_group_id)
+                    else:
+                        rpsbml.createSpecies(meta,
+                                             compartment_id,
+                                             chemName,
+                                             spe.xref,
+                                             spe.inchi,
+                                             spe.inchikey,
+                                             spe.smiles,
+                                             species_group_id)
 
                 #4) Add the complete reactions and their annotations
                 for step in steps:
