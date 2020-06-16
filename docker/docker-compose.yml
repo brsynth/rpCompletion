@@ -3,7 +3,6 @@ version: '2.4'
 services:
 
   gen-req:
-    image: brsynth/${COMPOSE_PROJECT_NAME}.req
     build:
       context: ..
       dockerfile: docker/req.dockerfile
