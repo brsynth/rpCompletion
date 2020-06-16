@@ -11,7 +11,7 @@ services:
         IMAGE: ${BASE_IMAGE}
     command: sh -c 'pip-compile requirements.in > requirements.txt'
     volumes:
-      - $PWD/..:/req
+      - ../requirements:/req
 
   tool:
     image: brsynth/${COMPOSE_PROJECT_NAME}

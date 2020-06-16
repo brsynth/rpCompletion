@@ -8,8 +8,7 @@ from glob import glob as glob_glob
 from copy import deepcopy as copy_deepcopy
 from argparse import ArgumentParser as argparse_ArgParser
 
-sys_path.insert(0, '/home/src/rpSBML')
-import rpSBML
+from rplibs import rpSBML
 sys_path.insert(0, '/home/rpCache')
 from rpCache import rpCache
 from rpCache import add_arguments as rpCache_add_arguments
