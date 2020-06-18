@@ -10,7 +10,7 @@ from bisect import insort as bisect_insort
 from sys import path as sys_path
 sys_path.insert(0, '/home/rpCache')
 from rpCache import rpCache
-from rplibs import rpSBML
+from brs_utils import rpSBML
 
 import rpCofactors
 
