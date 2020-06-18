@@ -591,10 +591,10 @@ class rpCompletion(rpCache):
                     (chemName, spe) = self._unique_species(meta, rp_strc, pubchem_search)
                     if chemName:
                         chemName = chemName.replace("'", "")
-                    self.logger.info('Creating species: '+str(chemName)+' ('+str(meta)+')')
+                    # self.logger.info('Creating species: '+str(chemName)+' ('+str(meta)+')')
                     #pass the information to create the species
                     if meta in sink_molecules:
-                        self.logger.info('Species is sink: '+str(sink_species_group_id))
+                        # self.logger.info('Species is sink: '+str(sink_species_group_id))
                         rpsbml.createSpecies(meta,
                                              compartment_id,
                                              chemName,
