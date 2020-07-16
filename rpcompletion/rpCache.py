@@ -39,7 +39,7 @@ def add_arguments(parser):
     return parser
 
 def build_parser():
-    return add_arguments(argparse_ArgumentParser('Python script to pre-compute data'))
+    return add_arguments(argparse_ArgParser('Python script to pre-compute data'))
 
 def entrypoint(args=sys.argv[1:]):
     parser = build_parser()
