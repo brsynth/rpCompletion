@@ -24,6 +24,7 @@ from credisdict import CRedisDict, wait_for_redis
 import redis_server
 from subprocess import run as proc_run
 from subprocess import Popen,PIPE
+from argparse import ArgumentParser as argparse_ArgParser
 
 #######################################################
 ################### rpCache  ##########################
@@ -781,5 +782,5 @@ class rpCache:
                 reaction[self._checkMNXRdeprecated(row['#Reaction_ID'])] = tmp
             return reaction
         except FileNotFoundError:
-            self.logger.error('Cannot find file: '+str(path))
+            self.logger.error('Cannot find file: '+str(rxn_recipes_path))
             return False

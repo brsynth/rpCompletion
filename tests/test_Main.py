@@ -15,12 +15,23 @@ from tempfile import TemporaryDirectory
 class Test_Main(TestCase):
 
     def setUp(self):
-        self.rpcompletion = rpCompletion('db')
         self.data_path = 'data'
 
-    def test_Small(self):
+    def test_db(self):
         tempdir = TemporaryDirectory()
-        rpsbml_paths = self.rpcompletion.rp2ToSBML(
+        rpcompletion = rpCompletion('db')
+        rpsbml_paths = rpcompletion.rp2ToSBML(
+                                 self.data_path+'/rp2_pathways.csv',
+                                 self.data_path+'/rp2paths_compounds.csv',
+                                 self.data_path+'/rp2paths_pathways.csv',
+                                 tempdir.name)
+        tempdir.cleanup()
+        self.assertEqual(True, True)
+
+    def test_file(self):
+        tempdir = TemporaryDirectory()
+        rpcompletion = rpCompletion('file')
+        rpsbml_paths = rpcompletion.rp2ToSBML(
                                  self.data_path+'/rp2_pathways.csv',
                                  self.data_path+'/rp2paths_compounds.csv',
                                  self.data_path+'/rp2paths_pathways.csv',

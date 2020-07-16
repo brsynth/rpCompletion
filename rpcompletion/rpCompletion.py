@@ -11,6 +11,8 @@ from os import path as os_path
 from os import mkdir as os_mkdir
 from .rpCofactors import rpCofactors, add_arguments
 from brs_utils import rpSBML
+from io import StringIO
+from copy import deepcopy
 
 #import rpCofactors
 
@@ -137,7 +139,7 @@ class rpCompletion(rpCofactors):
             try:
                 r = requests.post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
             except requests.exceptions.ConnectionError as e:
-                selg.logger.warning(e)
+                self.logger.warning(e)
                 return {}
         res_list = r.json()['InformationList']['Information']
         xref = {}
@@ -244,7 +246,7 @@ class rpCompletion(rpCofactors):
         rp_strc = {}
         try:
             if isinstance(path, bytes):
-                reader = csv.reader(io.StringIO(path.decode('utf-8')), delimiter='\t')
+                reader = csv.reader(StringIO(path.decode('utf-8')), delimiter='\t')
             else:
                 reader = csv.reader(open(path, 'r', encoding='utf-8'), delimiter='\t')
             next(reader)
@@ -287,7 +289,7 @@ class rpCompletion(rpCofactors):
         #### we might pass binary in the REST version
         reader = None
         if isinstance(path, bytes):
-            reader = csv.reader(io.StringIO(path.decode('utf-8')), delimiter=',')
+            reader = csv.reader(StringIO(path.decode('utf-8')), delimiter=',')
         else:
             try:
                 reader = csv.reader(open(path, 'r'), delimiter=',')
@@ -313,7 +315,7 @@ class rpCompletion(rpCofactors):
 
         #### we might pass binary in the REST version
         if isinstance(rp2paths_pathways, bytes):
-            reader = csv.reader(io.StringIO(rp2paths_pathways.decode('utf-8')))
+            reader = csv.reader(StringIO(rp2paths_pathways.decode('utf-8')))
         else:
             reader = csv.reader(open(rp2paths_pathways, 'r'))
         next(reader)
@@ -746,346 +748,346 @@ class rpCompletion(rpCofactors):
     # @param colJson Dictionnary of
     #  @return rpsbml.document the SBML document
     #TODO: update this to include _hdd parsing
-    def jsonToSBML(self,
-                   collJson,
-                   upper_flux_bound=999999,
-                   lower_flux_bound=0,
-                   pathway_id='rp_pathway',
-                   compartment_id='MNXC3',
-                   species_group_id='central_species',
-                   pubchem_search=False):
-        #global parameters used for all parameters
-        pathNum = 1
-        rp_paths = {}
-        reac_smiles = {}
-        reac_ecs = {}
-        species_list = {}
-        reactions_list = {}
-        source_cid = {}
-        source_stochio = {}
-        cid_inchikey = {}
-        sink_species = {}
-        ############################################
-        ############## gather the data #############
-        ############################################
-        for json_dict in collJson:
-            ########### construct rp_paths ########
-            reac_smiles[pathNum] = {}
-            reac_ecs[pathNum] = {}
-            species_list[pathNum] = {}
-            reactions_list[pathNum] = {}
-            cid_inchikey[pathNum] = {}
-            sink_species[pathNum] = {}
-            stochio = {}
-            inchikey_cid = {}
-            source_species = []
-            skip_pathway = False
-            for node in collJson[json_dict]['elements']['nodes']:
-                ##### compounds ####
-                if node['data']['type']=='compound':
-                    cid_inchikey[pathNum][node['data']['id'].replace('-', '')] = node['data']['id']
-                    species_list[pathNum][node['data']['id'].replace('-', '')] = {'inchi': node['data']['InChI'],
-                                    'inchikey': node['data']['id'],
-                                    'smiles': node['data']['SMILES']}
-                    if int(node['data']['isSource'])==1:
-                        #TODO: there should always be only one source, to check
-                        source_species.append(node['data']['id'].replace('-', ''))
-                        source_cid[pathNum] = node['data']['id'].replace('-', '')
-                    if int(node['data']['inSink'])==1:
-                        sink_species[pathNum][node['data']['id'].replace('-', '')] = node['data']['id']
-                ###### reactions ######
-                elif node['data']['type']=='reaction':
-                    #NOTE: pick the rule with the highest diameter
-                    r_id = sorted(node['data']['Rule ID'], key=lambda x: int(x.split('-')[-2]), reverse=True)[0]
-                    reactions_list[pathNum][node['data']['id']] = {'rule_id': r_id,
-                        'rule_ori_reac': None,
-                        'right': {},
-                        'left': {},
-                        'path_id': pathNum,
-                        'step': None,
-                        'sub_step': None,
-                        'transformation_id': None,
-                        'rule_score': node['data']['Score']}
-                    reac_smiles[pathNum][r_id] = node['data']['Reaction SMILES']
-                    reac_ecs[pathNum][r_id] = list(filter(None, [i for i in node['data']['EC number']]))
-                    stochio[node['data']['id']] = {}
-                    for i in node['data']['Stoechiometry']:
-                        stochio[node['data']['id']][i.replace('-', '')] = node['data']['Stoechiometry'][i]
-            ############ make main pathway ###########
-            main_reac = {}
-            for reaction_node in collJson[json_dict]['elements']['edges']:
-                if not len(reaction_node['data']['source'].split('-'))==3:
-                    if not reaction_node['data']['source'] in reactions_list[pathNum]:
-                        self.logger.error('The following reaction was not found in the JSON elements: '+str(reaction_node['data']['source']))
-                        skip_pathway = True
-                        break
-                    else:
-                        rid = reaction_node['data']['source']
-                        try:
-                            cid = inchikey_cid[reaction_node['data']['target'].replace('-', '')]
-                        except KeyError:
-                            cid = reaction_node['data']['target'].replace('-', '')
-                        try:
-                            reactions_list[pathNum][rid]['left'][cid] = stochio[rid][cid]
-                        except KeyError:
-                            reactions_list[pathNum][rid]['left'][cid] = 1.0
-                            self.logger.warning('The cid ('+str(cid)+') has not been detected by stochio. Setting to 1.0')
-                if not len(reaction_node['data']['target'].split('-'))==3:
-                    if not reaction_node['data']['target'] in reactions_list[pathNum]:
-                        self.logger.error('The following reaction was not found in the JSON elements: '+str(reaction_node['data']['source']))
-                        skip_pathway = True
-                        break
-                    else:
-                        rid = reaction_node['data']['target']
-                        try:
-                            cid = inchikey_cid[reaction_node['data']['source'].replace('-', '')]
-                        except KeyError:
-                            cid = reaction_node['data']['source'].replace('-', '')
-                        try:
-                            reactions_list[pathNum][rid]['right'][cid] = stochio[rid][cid]
-                        except KeyError:
-                            reactions_list[pathNum][rid]['right'][cid] = 1.0
-                            self.logger.warning('The cid ('+str(cid)+') has not been detected by stochio. Setting to 1.0')
-            ################# calculate the steps associated with the reactions_list ######
-            #find the source in the LAST reaction in the pathway
-            #NOTE: this assumes that the source is contained in a single final reaction and nowhere else
-            last_rid = None
-            step_num = 1
-            found_rid = []
-            toFind_rid = list(reactions_list[pathNum].keys())
-            for rid in reactions_list[pathNum]:
-                if all([True if i in source_species else False for i in reactions_list[pathNum][rid]['right']]):
-                    reactions_list[pathNum][rid]['step'] = step_num
-                    #step_num -= 1
-                    step_num += 1
-                    last_rid = rid
-                    try:
-                        source_stochio[pathNum] = stochio[rid][source_cid[pathNum]]
-                    except KeyError:
-                        source_stochio[pathNum] = 1.0
-                    found_rid.append(rid)
-                    toFind_rid.remove(rid)
-                    break
-            for rid in toFind_rid[:]:
-                if all([True if i in reactions_list[pathNum][last_rid]['left'] else False for i in reactions_list[pathNum][rid]['right']]):
-                    reactions_list[pathNum][rid]['step'] = step_num
-                    #step_num -= 1
-                    step_num += 1
-                    last_rid = rid
-                    found_rid.append(rid)
-                    toFind_rid.remove(rid)
-            if not toFind_rid==[]:
-                self.logger.error('There are reactions unaccounted for: '+str(toFind_rid))
-                skip_pathway = True
-                break
-            ############# find all the alternative reactions associated with a reaction rule ###
-            if not skip_pathway:
-                rp_paths[pathNum] = {}
-                for rid in reactions_list[pathNum]:
-                    rp_paths[pathNum][reactions_list[pathNum][rid]['step']] = {}
-                    sub_step = 1
-                    for reac_id in self.rr_reactions[reactions_list[pathNum][rid]['rule_id']]:
-                        tmpReac = copy.deepcopy(reactions_list[pathNum][rid])
-                        tmpReac['mnxr'] = reac_id
-                        tmpReac['sub_step'] = sub_step
-                        rp_paths[pathNum][reactions_list[pathNum][rid]['step']][sub_step] = tmpReac
-                        sub_step += 1
-            else:
-                self.logger.warning('Skipping pathway '+str(pathNum))
-            pathNum += 1
-        ######################################
-        ########### create the SBML's ########
-        ######################################
-        try:
-            mnxc = self.name_compXref[compartment_id]
-        except KeyError:
-            self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
-            return False
-        sbml_paths = {}
-        for pathNum in rp_paths:
-            #first level is the list of lists of sub_steps
-            #second is itertools all possible combinations using product
-            altPathNum = 1
-            for comb_path in list(itertools.product(*[[(i,y) for y in rp_paths[pathNum][i]] for i in rp_paths[pathNum]])):
-                steps = []
-                for i, y in comb_path:
-                    steps.append(rp_paths[pathNum][i][y])
-                path_id = steps[0]['path_id']
-                rpsbml = rpSBML.rpSBML('rp_'+str(path_id)+'_'+str(altPathNum))
-                #1) create a generic Model, ie the structure and unit definitions that we will use the most
-                ##### TODO: give the user more control over a generic model creation:
-                #   -> special attention to the compartment
-                rpsbml.genericModel('RetroPath_Pathway_'+str(path_id)+'_'+str(altPathNum),
-                        'RP_model_'+str(path_id)+'_'+str(altPathNum),
-                        self.compXref[mnxc],
-                        compartment_id,
-                        upper_flux_bound,
-                        lower_flux_bound)
-                #2) create the pathway (groups)
-                rpsbml.createPathway(pathway_id)
-                rpsbml.createPathway(species_group_id)
-                #3) find all the unique species and add them to the model
-                ###################################################
-                ############## SPECIES ############################
-                ###################################################
-                meta_to_cid = {}
-                for meta in species_list[pathNum]:
-                    #### beofre adding it to the model check to see if you can recover some MNXM from inchikey
-                    #NOTE: only for the sink species do we try to convert to MNXM
-                    if meta in list(sink_species[pathNum].keys()):
-                        try:
-                            #take the smallest MNX, usually the best TODO: review this
-                            cid = sorted(self.inchikey_mnxm[sink_species[pathNum][meta]], key=lambda x: int(x[4:]))[0]
-                            meta_to_cid[meta] = cid
-                        except KeyError:
-                            self.logger.error('Cannot find sink compound: '+str(meta))
-                            return False
-                    else:
-                        cid = meta
-                    # retreive the name of the molecule
-                    #here we want to gather the info from rpCompletion's rp_strc and mnxm_strc
-                    try:
-                        chemName = self.mnxm_strc[meta]['name']
-                    except KeyError:
-                        chemName = None
-                    #compile as much info as you can
-                    #xref
-                    try:
-                        spe_xref = self.chemXref[meta]
-                    except KeyError:
-                        spe_xref = {}
-                    ###### Try to recover the structures ####
-                    spe_smiles = None
-                    spe_inchi = None
-                    spe_inchikey = None
-                    pubchem_smiles = None
-                    pubchem_inchi = None
-                    pubchem_inchikey = None
-                    pubchem_xref = {}
-                    #inchi
-                    try:
-                        spe_inchi = rp_strc[meta]['inchi']
-                        if not spe_xref and pubchem_search:
-                            try:
-                                pubchem_inchi = self.pubchem_species[spe_inchi]['inchi']
-                                pubchem_inchikey = self.pubchem_species[spe_inchi]['inchikey']
-                                pubchem_smiles = self.pubchem_species[spe_inchi]['smiles']
-                                pubchem_xref = self.pubchem_species[spe_inchi]['xref']
-                            except KeyError:
-                                pubres = self._pubchemStrctSearch(spe_inchi, 'inchi')
-                                if not chemName:
-                                    chemName = pubres['name']
-                                if 'chebi' in pubres['xref']:
-                                    try:
-                                        #WARNING: taking the first one. Better to take the smallest?
-                                        spe_xref = self.chemXref[self.chebi_mnxm[pubres['xref']['chebi'][0]]]
-                                    except KeyError:
-                                        pass
-                                if not pubchem_xref:
-                                    pubchem_xref = pubres['xref']
-                                if not pubchem_inchikey:
-                                    pubchem_inchikey = pubres['inchikey']
-                                if not pubchem_smiles:
-                                    pubchem_smiles = pubres['smiles']
-                    except KeyError:
-                        pass
-                    #inchikey
-                    try:
-                        spe_inchikey = rp_strc[meta]['inchikey']
-                        if not spe_xref and pubchem_search:
-                            pubres = self._pubchemStrctSearch(spe_inchikey, 'inchikey')
-                            if not chemName:
-                                chemName = pubres['name']
-                            if 'chebi' in pubres['xref']:
-                                try:
-                                    spe_xref = self.chemXref[self.chebi_mnxm[pubres['xref']['chebi'][0]]]
-                                except KeyError:
-                                    pass
-                            if not pubchem_xref:
-                                pubchem_xref = pubres['xref']
-                            if not pubchem_inchi:
-                                pubchem_inchi = pubres['inchi']
-                            if not pubchem_smiles:
-                                pubchem_smiles = pubres['smiles']
-                    except KeyError:
-                        pass
-                    #smiles
-                    try:
-                        spe_smiles = rp_strc[meta]['smiles']
-                        if not spe_xref and pubchem_search:
-                            pubres = self._pubchemStrctSearch(spe_smiles, 'smiles')
-                            if not chemName:
-                                chemName = pubres['name']
-                            if 'chebi' in pubres['xref']:
-                                try:
-                                    spe_xref = self.chemXref[self.chebi_mnxm[pubres['xref']['chebi'][0]]]
-                                except KeyError:
-                                    pass
-                            if not pubchem_xref:
-                                pubchem_xref = pubres['xref']
-                            if not pubchem_inchi:
-                                pubchem_inchi = pubres['inchi']
-                            if not pubchem_inchikey:
-                                pubchem_inchikey = pubres['inchikey']
-                    except KeyError:
-                        pass
-                    if not spe_inchi:
-                        spe_inchi = pubchem_inchi
-                    if not spe_inchikey:
-                        spe_inchikey = pubchem_inchikey
-                    if not spe_smiles:
-                        spe_smiles = pubchem_smiles
-                    if not spe_xref:
-                        spe_xref = pubchem_xref
-                    #pass the information to create the species
-                    rpsbml.createSpecies(meta,
-                            compartment_id,
-                            chemName,
-                            spe_xref,
-                            spe_inchi,
-                            spe_inchikey,
-                            spe_smiles,
-                            species_group_id)
-                #4) add the reactions and their annotations
-                for step in steps:
-                    #add the substep to the model
-                    step['sub_step'] = altPathNum
-                    #### try to replace the sink compounds inchikeys with mnxm
-                    for direc in ['right', 'left']:
-                        step_mnxm = {}
-                        for meta in step[direc]:
-                            try:
-                                step_mnxm[meta_to_cid[meta]] = step[direc][meta]
-                            except KeyError:
-                                step_mnxm[meta] = step[direc][meta]
-                        step[direc] = step_mnxm
-                    rpsbml.createReaction('RP'+str(step['step']),
-                            upper_flux_bound,
-                            lower_flux_bound,
-                            step,
-                            compartment_id,
-                            reac_smiles[pathNum][step['rule_id']],
-                            {'ec': reac_ecs[pathNum][step['rule_id']]},
-                            pathway_id)
-                #5) adding the consumption of the target
-                targetStep = {'rule_id': None,
-                        'left': {source_cid[pathNum]: source_stochio[pathNum]},
-                        'right': {},
-                        'step': None,
-                        'sub_step': None,
-                        'path_id': None,
-                        'transformation_id': None,
-                        'rule_score': None,
-                        'rule_ori_reac': None}
-                rpsbml.createReaction('RP1_sink',
-                        upper_flux_bound,
-                        lower_flux_bound,
-                        targetStep,
-                        compartment_id)
-                #6) Optional?? Add the flux objectives. Could be in another place, TBD
-                rpsbml.createFluxObj('rpFBA_obj', 'RP1_sink', 1, True)
-                sbml_paths['rp_'+str(step['path_id'])+'_'+str(altPathNum)] = rpsbml
-                altPathNum += 1
+    # def jsonToSBML(self,
+    #                collJson,
+    #                upper_flux_bound=999999,
+    #                lower_flux_bound=0,
+    #                pathway_id='rp_pathway',
+    #                compartment_id='MNXC3',
+    #                species_group_id='central_species',
+    #                pubchem_search=False):
+    #     #global parameters used for all parameters
+    #     pathNum = 1
+    #     rp_paths = {}
+    #     reac_smiles = {}
+    #     reac_ecs = {}
+    #     species_list = {}
+    #     reactions_list = {}
+    #     source_cid = {}
+    #     source_stochio = {}
+    #     cid_inchikey = {}
+    #     sink_species = {}
+    #     ############################################
+    #     ############## gather the data #############
+    #     ############################################
+    #     for json_dict in collJson:
+    #         ########### construct rp_paths ########
+    #         reac_smiles[pathNum] = {}
+    #         reac_ecs[pathNum] = {}
+    #         species_list[pathNum] = {}
+    #         reactions_list[pathNum] = {}
+    #         cid_inchikey[pathNum] = {}
+    #         sink_species[pathNum] = {}
+    #         stochio = {}
+    #         inchikey_cid = {}
+    #         source_species = []
+    #         skip_pathway = False
+    #         for node in collJson[json_dict]['elements']['nodes']:
+    #             ##### compounds ####
+    #             if node['data']['type']=='compound':
+    #                 cid_inchikey[pathNum][node['data']['id'].replace('-', '')] = node['data']['id']
+    #                 species_list[pathNum][node['data']['id'].replace('-', '')] = {'inchi': node['data']['InChI'],
+    #                                 'inchikey': node['data']['id'],
+    #                                 'smiles': node['data']['SMILES']}
+    #                 if int(node['data']['isSource'])==1:
+    #                     #TODO: there should always be only one source, to check
+    #                     source_species.append(node['data']['id'].replace('-', ''))
+    #                     source_cid[pathNum] = node['data']['id'].replace('-', '')
+    #                 if int(node['data']['inSink'])==1:
+    #                     sink_species[pathNum][node['data']['id'].replace('-', '')] = node['data']['id']
+    #             ###### reactions ######
+    #             elif node['data']['type']=='reaction':
+    #                 #NOTE: pick the rule with the highest diameter
+    #                 r_id = sorted(node['data']['Rule ID'], key=lambda x: int(x.split('-')[-2]), reverse=True)[0]
+    #                 reactions_list[pathNum][node['data']['id']] = {'rule_id': r_id,
+    #                     'rule_ori_reac': None,
+    #                     'right': {},
+    #                     'left': {},
+    #                     'path_id': pathNum,
+    #                     'step': None,
+    #                     'sub_step': None,
+    #                     'transformation_id': None,
+    #                     'rule_score': node['data']['Score']}
+    #                 reac_smiles[pathNum][r_id] = node['data']['Reaction SMILES']
+    #                 reac_ecs[pathNum][r_id] = list(filter(None, [i for i in node['data']['EC number']]))
+    #                 stochio[node['data']['id']] = {}
+    #                 for i in node['data']['Stoechiometry']:
+    #                     stochio[node['data']['id']][i.replace('-', '')] = node['data']['Stoechiometry'][i]
+    #         ############ make main pathway ###########
+    #         main_reac = {}
+    #         for reaction_node in collJson[json_dict]['elements']['edges']:
+    #             if not len(reaction_node['data']['source'].split('-'))==3:
+    #                 if not reaction_node['data']['source'] in reactions_list[pathNum]:
+    #                     self.logger.error('The following reaction was not found in the JSON elements: '+str(reaction_node['data']['source']))
+    #                     skip_pathway = True
+    #                     break
+    #                 else:
+    #                     rid = reaction_node['data']['source']
+    #                     try:
+    #                         cid = inchikey_cid[reaction_node['data']['target'].replace('-', '')]
+    #                     except KeyError:
+    #                         cid = reaction_node['data']['target'].replace('-', '')
+    #                     try:
+    #                         reactions_list[pathNum][rid]['left'][cid] = stochio[rid][cid]
+    #                     except KeyError:
+    #                         reactions_list[pathNum][rid]['left'][cid] = 1.0
+    #                         self.logger.warning('The cid ('+str(cid)+') has not been detected by stochio. Setting to 1.0')
+    #             if not len(reaction_node['data']['target'].split('-'))==3:
+    #                 if not reaction_node['data']['target'] in reactions_list[pathNum]:
+    #                     self.logger.error('The following reaction was not found in the JSON elements: '+str(reaction_node['data']['source']))
+    #                     skip_pathway = True
+    #                     break
+    #                 else:
+    #                     rid = reaction_node['data']['target']
+    #                     try:
+    #                         cid = inchikey_cid[reaction_node['data']['source'].replace('-', '')]
+    #                     except KeyError:
+    #                         cid = reaction_node['data']['source'].replace('-', '')
+    #                     try:
+    #                         reactions_list[pathNum][rid]['right'][cid] = stochio[rid][cid]
+    #                     except KeyError:
+    #                         reactions_list[pathNum][rid]['right'][cid] = 1.0
+    #                         self.logger.warning('The cid ('+str(cid)+') has not been detected by stochio. Setting to 1.0')
+    #         ################# calculate the steps associated with the reactions_list ######
+    #         #find the source in the LAST reaction in the pathway
+    #         #NOTE: this assumes that the source is contained in a single final reaction and nowhere else
+    #         last_rid = None
+    #         step_num = 1
+    #         found_rid = []
+    #         toFind_rid = list(reactions_list[pathNum].keys())
+    #         for rid in reactions_list[pathNum]:
+    #             if all([True if i in source_species else False for i in reactions_list[pathNum][rid]['right']]):
+    #                 reactions_list[pathNum][rid]['step'] = step_num
+    #                 #step_num -= 1
+    #                 step_num += 1
+    #                 last_rid = rid
+    #                 try:
+    #                     source_stochio[pathNum] = stochio[rid][source_cid[pathNum]]
+    #                 except KeyError:
+    #                     source_stochio[pathNum] = 1.0
+    #                 found_rid.append(rid)
+    #                 toFind_rid.remove(rid)
+    #                 break
+    #         for rid in toFind_rid[:]:
+    #             if all([True if i in reactions_list[pathNum][last_rid]['left'] else False for i in reactions_list[pathNum][rid]['right']]):
+    #                 reactions_list[pathNum][rid]['step'] = step_num
+    #                 #step_num -= 1
+    #                 step_num += 1
+    #                 last_rid = rid
+    #                 found_rid.append(rid)
+    #                 toFind_rid.remove(rid)
+    #         if not toFind_rid==[]:
+    #             self.logger.error('There are reactions unaccounted for: '+str(toFind_rid))
+    #             skip_pathway = True
+    #             break
+    #         ############# find all the alternative reactions associated with a reaction rule ###
+    #         if not skip_pathway:
+    #             rp_paths[pathNum] = {}
+    #             for rid in reactions_list[pathNum]:
+    #                 rp_paths[pathNum][reactions_list[pathNum][rid]['step']] = {}
+    #                 sub_step = 1
+    #                 for reac_id in self.rr_reactions[reactions_list[pathNum][rid]['rule_id']]:
+    #                     tmpReac = deepcopy(reactions_list[pathNum][rid])
+    #                     tmpReac['mnxr'] = reac_id
+    #                     tmpReac['sub_step'] = sub_step
+    #                     rp_paths[pathNum][reactions_list[pathNum][rid]['step']][sub_step] = tmpReac
+    #                     sub_step += 1
+    #         else:
+    #             self.logger.warning('Skipping pathway '+str(pathNum))
+    #         pathNum += 1
+    #     ######################################
+    #     ########### create the SBML's ########
+    #     ######################################
+    #     try:
+    #         mnxc = self.name_compXref[compartment_id]
+    #     except KeyError:
+    #         self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
+    #         return False
+    #     sbml_paths = {}
+    #     for pathNum in rp_paths:
+    #         #first level is the list of lists of sub_steps
+    #         #second is itertools all possible combinations using product
+    #         altPathNum = 1
+    #         for comb_path in list(itertools_product(*[[(i,y) for y in rp_paths[pathNum][i]] for i in rp_paths[pathNum]])):
+    #             steps = []
+    #             for i, y in comb_path:
+    #                 steps.append(rp_paths[pathNum][i][y])
+    #             path_id = steps[0]['path_id']
+    #             rpsbml = rpSBML.rpSBML('rp_'+str(path_id)+'_'+str(altPathNum))
+    #             #1) create a generic Model, ie the structure and unit definitions that we will use the most
+    #             ##### TODO: give the user more control over a generic model creation:
+    #             #   -> special attention to the compartment
+    #             rpsbml.genericModel('RetroPath_Pathway_'+str(path_id)+'_'+str(altPathNum),
+    #                     'RP_model_'+str(path_id)+'_'+str(altPathNum),
+    #                     self.compXref[mnxc],
+    #                     compartment_id,
+    #                     upper_flux_bound,
+    #                     lower_flux_bound)
+    #             #2) create the pathway (groups)
+    #             rpsbml.createPathway(pathway_id)
+    #             rpsbml.createPathway(species_group_id)
+    #             #3) find all the unique species and add them to the model
+    #             ###################################################
+    #             ############## SPECIES ############################
+    #             ###################################################
+    #             meta_to_cid = {}
+    #             for meta in species_list[pathNum]:
+    #                 #### beofre adding it to the model check to see if you can recover some MNXM from inchikey
+    #                 #NOTE: only for the sink species do we try to convert to MNXM
+    #                 if meta in list(sink_species[pathNum].keys()):
+    #                     try:
+    #                         #take the smallest MNX, usually the best TODO: review this
+    #                         cid = sorted(self.inchikey_mnxm[sink_species[pathNum][meta]], key=lambda x: int(x[4:]))[0]
+    #                         meta_to_cid[meta] = cid
+    #                     except KeyError:
+    #                         self.logger.error('Cannot find sink compound: '+str(meta))
+    #                         return False
+    #                 else:
+    #                     cid = meta
+    #                 # retreive the name of the molecule
+    #                 #here we want to gather the info from rpCompletion's rp_strc and mnxm_strc
+    #                 try:
+    #                     chemName = self.mnxm_strc[meta]['name']
+    #                 except KeyError:
+    #                     chemName = None
+    #                 #compile as much info as you can
+    #                 #xref
+    #                 try:
+    #                     spe_xref = self.chemXref[meta]
+    #                 except KeyError:
+    #                     spe_xref = {}
+    #                 ###### Try to recover the structures ####
+    #                 spe_smiles = None
+    #                 spe_inchi = None
+    #                 spe_inchikey = None
+    #                 pubchem_smiles = None
+    #                 pubchem_inchi = None
+    #                 pubchem_inchikey = None
+    #                 pubchem_xref = {}
+    #                 #inchi
+    #                 try:
+    #                     spe_inchi = rp_strc[meta]['inchi']
+    #                     if not spe_xref and pubchem_search:
+    #                         try:
+    #                             pubchem_inchi = self.pubchem_species[spe_inchi]['inchi']
+    #                             pubchem_inchikey = self.pubchem_species[spe_inchi]['inchikey']
+    #                             pubchem_smiles = self.pubchem_species[spe_inchi]['smiles']
+    #                             pubchem_xref = self.pubchem_species[spe_inchi]['xref']
+    #                         except KeyError:
+    #                             pubres = self._pubchemStrctSearch(spe_inchi, 'inchi')
+    #                             if not chemName:
+    #                                 chemName = pubres['name']
+    #                             if 'chebi' in pubres['xref']:
+    #                                 try:
+    #                                     #WARNING: taking the first one. Better to take the smallest?
+    #                                     spe_xref = self.chemXref[self.chebi_mnxm[pubres['xref']['chebi'][0]]]
+    #                                 except KeyError:
+    #                                     pass
+    #                             if not pubchem_xref:
+    #                                 pubchem_xref = pubres['xref']
+    #                             if not pubchem_inchikey:
+    #                                 pubchem_inchikey = pubres['inchikey']
+    #                             if not pubchem_smiles:
+    #                                 pubchem_smiles = pubres['smiles']
+    #                 except KeyError:
+    #                     pass
+    #                 #inchikey
+    #                 try:
+    #                     spe_inchikey = rp_strc[meta]['inchikey']
+    #                     if not spe_xref and pubchem_search:
+    #                         pubres = self._pubchemStrctSearch(spe_inchikey, 'inchikey')
+    #                         if not chemName:
+    #                             chemName = pubres['name']
+    #                         if 'chebi' in pubres['xref']:
+    #                             try:
+    #                                 spe_xref = self.chemXref[self.chebi_mnxm[pubres['xref']['chebi'][0]]]
+    #                             except KeyError:
+    #                                 pass
+    #                         if not pubchem_xref:
+    #                             pubchem_xref = pubres['xref']
+    #                         if not pubchem_inchi:
+    #                             pubchem_inchi = pubres['inchi']
+    #                         if not pubchem_smiles:
+    #                             pubchem_smiles = pubres['smiles']
+    #                 except KeyError:
+    #                     pass
+    #                 #smiles
+    #                 try:
+    #                     spe_smiles = rp_strc[meta]['smiles']
+    #                     if not spe_xref and pubchem_search:
+    #                         pubres = self._pubchemStrctSearch(spe_smiles, 'smiles')
+    #                         if not chemName:
+    #                             chemName = pubres['name']
+    #                         if 'chebi' in pubres['xref']:
+    #                             try:
+    #                                 spe_xref = self.chemXref[self.chebi_mnxm[pubres['xref']['chebi'][0]]]
+    #                             except KeyError:
+    #                                 pass
+    #                         if not pubchem_xref:
+    #                             pubchem_xref = pubres['xref']
+    #                         if not pubchem_inchi:
+    #                             pubchem_inchi = pubres['inchi']
+    #                         if not pubchem_inchikey:
+    #                             pubchem_inchikey = pubres['inchikey']
+    #                 except KeyError:
+    #                     pass
+    #                 if not spe_inchi:
+    #                     spe_inchi = pubchem_inchi
+    #                 if not spe_inchikey:
+    #                     spe_inchikey = pubchem_inchikey
+    #                 if not spe_smiles:
+    #                     spe_smiles = pubchem_smiles
+    #                 if not spe_xref:
+    #                     spe_xref = pubchem_xref
+    #                 #pass the information to create the species
+    #                 rpsbml.createSpecies(meta,
+    #                         compartment_id,
+    #                         chemName,
+    #                         spe_xref,
+    #                         spe_inchi,
+    #                         spe_inchikey,
+    #                         spe_smiles,
+    #                         species_group_id)
+    #             #4) add the reactions and their annotations
+    #             for step in steps:
+    #                 #add the substep to the model
+    #                 step['sub_step'] = altPathNum
+    #                 #### try to replace the sink compounds inchikeys with mnxm
+    #                 for direc in ['right', 'left']:
+    #                     step_mnxm = {}
+    #                     for meta in step[direc]:
+    #                         try:
+    #                             step_mnxm[meta_to_cid[meta]] = step[direc][meta]
+    #                         except KeyError:
+    #                             step_mnxm[meta] = step[direc][meta]
+    #                     step[direc] = step_mnxm
+    #                 rpsbml.createReaction('RP'+str(step['step']),
+    #                         upper_flux_bound,
+    #                         lower_flux_bound,
+    #                         step,
+    #                         compartment_id,
+    #                         reac_smiles[pathNum][step['rule_id']],
+    #                         {'ec': reac_ecs[pathNum][step['rule_id']]},
+    #                         pathway_id)
+    #             #5) adding the consumption of the target
+    #             targetStep = {'rule_id': None,
+    #                     'left': {source_cid[pathNum]: source_stochio[pathNum]},
+    #                     'right': {},
+    #                     'step': None,
+    #                     'sub_step': None,
+    #                     'path_id': None,
+    #                     'transformation_id': None,
+    #                     'rule_score': None,
+    #                     'rule_ori_reac': None}
+    #             rpsbml.createReaction('RP1_sink',
+    #                     upper_flux_bound,
+    #                     lower_flux_bound,
+    #                     targetStep,
+    #                     compartment_id)
+    #             #6) Optional?? Add the flux objectives. Could be in another place, TBD
+    #             rpsbml.createFluxObj('rpFBA_obj', 'RP1_sink', 1, True)
+    #             sbml_paths['rp_'+str(step['path_id'])+'_'+str(altPathNum)] = rpsbml
+    #             altPathNum += 1
 
 
     #############################################################################################
@@ -1225,7 +1227,7 @@ class rpCompletion(rpCofactors):
         except FileNotFoundError:
             self.logger.error('Cannot open the file: '+str(inFile))
         #now loop through all of them and remove the invalid paths
-        toRet = copy.deepcopy(data)
+        toRet = deepcopy(data)
         for path_id in data.keys():
             if toRet[path_id]['isValid']==False:
                 del toRet[path_id]
