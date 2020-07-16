@@ -6,18 +6,39 @@ from itertools import product as itertools_product
 from time import time as time_time
 from time import sleep as time_sleep
 from bisect import insort as bisect_insort
-
-from sys import path as sys_path
-sys_path.insert(0, '/home/rpCache')
-from rpCache import rpCache
+from argparse import ArgumentParser as argparse_ArgumentParser
+from os import path as os_path
+from os import mkdir as os_mkdir
+from .rpCofactors import rpCofactors, add_arguments
 from brs_utils import rpSBML
 
-import rpCofactors
+#import rpCofactors
 
 ## @package rpCompletion
 #
-# Collectoion of functions that convert the outputs from various sources to the SBML format (rpSBML) for further analyses
+# Collection of functions that convert the outputs from various sources to the SBML format (rpSBML) for further analyses
 
+def build_args_parser():
+    parser = argparse_ArgumentParser('Python wrapper to parse RP2 to generate rpSBML collection of unique and complete (cofactors) pathways')
+    parser = _add_arguments(parser)
+
+    return parser
+
+def _add_arguments(parser):
+    parser = add_arguments(parser)
+    parser.add_argument('rp2_pathways', type=str)
+    parser.add_argument('rp2paths_compounds', type=str)
+    parser.add_argument('rp2paths_pathways', type=str)
+    parser.add_argument('outdir', type=str)
+    parser.add_argument('--upper_flux_bound', type=int, default=999999)
+    parser.add_argument('--lower_flux_bound', type=int, default=0)
+    parser.add_argument('--max_subpaths_filter', type=int, default=10)
+    parser.add_argument('--pathway_id', type=str, default='rp_pathway')
+    parser.add_argument('--compartment_id', type=str, default='MNXC3')
+    parser.add_argument('--species_group_id', type=str, default='central_species')
+    parser.add_argument('--sink_species_group_id', type=str, default='rp_sink_species')
+    parser.add_argument('--pubchem_search', type=str, default='False')
+    return parser
 
 class Species:
     def __init__(self, inchi, inchikey, smiles, xref):
@@ -43,13 +64,13 @@ class SBML_Item:
 ## Class to read all the input files
 #
 # Contains all the functions that read the cache files and input files to reconstruct the heterologous pathways
-class rpCompletion(rpCache):
+class rpCompletion(rpCofactors):
     ## InputReader constructor
     #
     #  @param self The object pointer
-    def __init__(self, db='file', print_infos=False):
-        super().__init__(db, print_infos)
-        self.rpcofactors = rpCofactors.rpCofactors(self.store_mode, self.print)
+    def __init__(self, db='file'):
+        super().__init__(db)
+        # self.rpcofactors = rpCofactors(db, self.print)
         # self.logger = logging.getLogger(__name__)
         self.logger.info('Starting instance of rpCompletion')
 
@@ -175,10 +196,10 @@ class rpCompletion(rpCache):
     # @outFolder folder where to write files
     # @return Boolean The success or failure of the function
     def rp2ToSBML(self,
-                  rp2paths_compounds,
                   rp2_pathways,
+                  rp2paths_compounds,
                   rp2paths_pathways,
-                  outFolder,
+                  outdir,
                   upper_flux_bound=999999,
                   lower_flux_bound=0,
                   max_subpaths_filter=10,
@@ -187,13 +208,20 @@ class rpCompletion(rpCache):
                   species_group_id='central_species',
                   sink_species_group_id='rp_sink_species',
                   pubchem_search=False):
+
+        if max_subpaths_filter<0:
+            raise ValueError('Max number of subpaths cannot be less than 0: '+str(max_subpaths_filter))
+
+        if not os_path.exists(outdir):
+            os_mkdir(outdir)
+
         rp_strc = self._compounds(rp2paths_compounds)
         rp_transformation, sink_molecules = self._transformation(rp2_pathways)
         return self.Write_rp2pathsToSBML(rp_strc,
                                          rp_transformation,
                                          sink_molecules,
                                          rp2paths_pathways,
-                                         outFolder,
+                                         outdir,
                                          upper_flux_bound,
                                          lower_flux_bound,
                                          max_subpaths_filter,
@@ -215,7 +243,6 @@ class rpCompletion(rpCache):
         #self.rp_strc = {}
         rp_strc = {}
         try:
-            #### we might pass binary in the REST version
             if isinstance(path, bytes):
                 reader = csv.reader(io.StringIO(path.decode('utf-8')), delimiter='\t')
             else:
@@ -642,7 +669,7 @@ class rpCompletion(rpCache):
                                       compartment_id)
 
                 #6) Adding the cofactors
-                self.rpcofactors.addCofactors(rpsbml)
+                self.addCofactors(rpsbml)
 
                 #7) Filtering
                 sbml_item = SBML_Item(rpsbml.getScore(),

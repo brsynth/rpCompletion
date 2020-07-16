@@ -1,0 +1,65 @@
+from setuptools import setup
+
+
+_readme = 'README.md'
+
+with open('.env', 'r') as f:
+    line = f.readline()
+    if line.startswith('PACKAGE='):
+        _package = line.splitlines()[0].split('=')[1].lower()
+    if line.startswith('URL='):
+        _url = line.splitlines()[0].split('=')[1].lower()
+    if line.startswith('AUTHORS='):
+        _authors = line.splitlines()[0].split('=')[1].lower()
+    if line.startswith('DESCR='):
+        _descr = line.splitlines()[0].split('=')[1].lower()
+    if line.startswith('CORR_AUTHOR='):
+        _corr_author = line.splitlines()[0].split('=')[1].lower()
+
+with open(_readme, 'r') as f:
+    long_description = f.read()
+
+required = []
+with open(_package+'/requirements.txt', 'r') as f:
+    required = [line.splitlines()[0] for line in f]
+
+# hack to handle diff between pip and conda package name
+from sys import argv as sys_argv
+if 'bdist_conda' in sys_argv:
+    required += ['rdkit']
+
+
+_release = 'RELEASE'
+# extra_files={
+#     'release': (_package, [_package+'/doc/'+_release])
+# }
+
+# with open(extra_files['release'][1][0], 'r') as f:
+with open(_release, 'r') as f:
+    _version = f.readline().split()[0]
+
+setup(
+    name=_package,
+    version=_version,
+    author=_authors,
+    author_email=_corr_author,
+    description=_descr,
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    url=_url,
+    packages=[_package],
+    # package_dir={_package: _package},
+    install_requires=required,
+    tests_require=required,
+    test_suite='pytest',
+    package_data={_package: ['requirements.txt']},
+#    include_package_data=True,
+#    data_files=[v for v in extra_files.values()],
+    license='MIT',
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+    ],
+    python_requires='>=3.5',
+)

@@ -1,2 +1,8 @@
+# Specific
+OLD
+
+# Generic
 __pycache__
 .DS_Store
+.pypirc
+.pytest_cache

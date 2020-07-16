@@ -9,9 +9,38 @@ from copy import deepcopy as copy_deepcopy
 from argparse import ArgumentParser as argparse_ArgParser
 
 from brs_utils import rpSBML
-sys_path.insert(0, '/home/rpCache')
-from rpCache import rpCache
-from rpCache import add_arguments as rpCache_add_arguments
+from .rpCache import rpCache, add_arguments
+
+
+def _add_arguments(parser):
+    parser = add_arguments(parser)
+    parser.add_argument('-input_file', type=str)
+    parser.add_argument('-output_dir', type=str, default='')
+    parser.add_argument('-pathway_id', type=str, default='rp_pathway')
+    parser.add_argument('-compartment_id', type=str, default='MNXC3')
+    return parser
+
+def build_parser():
+    parser = argparse_ArgParser('Add the missing cofactors to the monocomponent reactions to the SBML outputs of rpReader')
+    parser = _add_arguments(parser)
+    return parser
+
+def entrypoint(args=sys_argv[1:]):
+    parser = build_parser()
+
+    params = parser.parse_args(args)
+
+    rpcofactors = rpCofactors(params.store_mode, params.print)
+    rpcofactors.run(params.input_file,
+                    params.output_dir,
+                    params.pathway_id,
+                    params.compartment_id)
+
+
+
+if __name__ == "__main__":
+
+    entrypoint(sys_argv[1:])
 
 ## Class to add the cofactors to a monocomponent reaction to construct the full reaction
 #
@@ -270,34 +299,3 @@ class rpCofactors(rpCache):
             return False
 
         return True
-
-def add_arguments(parser):
-    parser.add_argument('-input_file', type=str)
-    parser.add_argument('-output_dir', type=str, default='')
-    parser.add_argument('-pathway_id', type=str, default='rp_pathway')
-    parser.add_argument('-compartment_id', type=str, default='MNXC3')
-    return parser
-
-def build_parser():
-    parser = argparse_ArgParser('Add the missing cofactors to the monocomponent reactions to the SBML outputs of rpReader')
-    parser = rpCache_add_arguments(parser)
-    parser = add_arguments(parser)
-
-    return parser
-
-def entrypoint(args=sys_argv[1:]):
-    parser = build_parser()
-
-    params = parser.parse_args(args)
-
-    rpcofactors = rpCofactors(params.store_mode, params.print)
-    rpcofactors.run(params.input_file,
-                    params.output_dir,
-                    params.pathway_id,
-                    params.compartment_id)
-
-
-
-if __name__ == "__main__":
-
-    entrypoint(sys_argv[1:])
