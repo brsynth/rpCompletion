@@ -74,9 +74,5 @@ jobs:
     - name: Test
       run: |
         cd tests
-        docker-compose \
-            -f pytest/docker/docker-compose.yml \
-            --env-file pytest/docker/.env \
-            up -d db
         bash ./test-in-docker.sh
 #        pytest --verbose
