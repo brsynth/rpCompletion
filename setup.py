@@ -53,7 +53,6 @@ setup(
     package_dir={_package: _package},
     include_package_data=True,
     install_requires=required,
-    tests_require=required,
     test_suite='pytest',
     license='MIT',
     classifiers=[
