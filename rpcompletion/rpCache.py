@@ -8,7 +8,6 @@ from logging import getLogger as logging_getLogger
 from json import dump as json_dump
 from json import load as json_load
 from gzip import open as gzip_open
-from urllib.request import Request, urlopen, urlretrieve
 from re import findall as re_findall
 from tarfile import open as tarfile_open
 from shutil import move as shutil_move
@@ -446,19 +445,12 @@ class rpCache:
 
         # 3xCommon + rpReader
         if file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
-            if url.lower().startswith('http'):
-              req = Request(url+file)
-            else:
-              raise ValueError from None
-            with urlopen(req) as response:
-                with open(outdir+'/'+file, 'wb') as f:
-                    f.write(response.read())
-            # urlretrieve(url+file, outdir+'/'+file)
+            download(url+file, outdir+'/'+file)
 
         #TODO: need to add this file to the git or another location
         if file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
-            urlretrieve('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
-                                       outdir+'/rr02_more_data.tar.gz')
+            download('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
+                     outdir+'/rr02_more_data.tar.gz')
             tar = tarfile_open(outdir+'/rr02_more_data.tar.gz', 'r:gz')
             tar.extractall(outdir)
             tar.close()
@@ -470,8 +462,8 @@ class rpCache:
             shutil_rmtree(outdir+'/rr02_more_data')
 
         if file=='rules_rall.tsv':
-            urlretrieve('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
-                                       outdir+'/retrorules_rr02_rp3_hs.tar.gz')
+            download('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
+                     outdir+'/retrorules_rr02_rp3_hs.tar.gz')
             tar = tarfile_open(outdir+'/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
             tar.extractall(outdir)
             tar.close()
