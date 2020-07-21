@@ -25,6 +25,7 @@ from subprocess import Popen,PIPE
 from argparse import ArgumentParser as argparse_ArgParser
 from hashlib import sha512
 from pathlib import Path
+from pycolorterm.pycolorterm import print_pretty
 
 
 #######################################################
@@ -285,160 +286,187 @@ class rpCache:
             rpCache._download_input_cache(url, file, input_dir)
 
         # GENERATE CACHE FILES AND STORE THEM TO DISK
+        attribute = 'deprecatedMNXM_mnxm'
+        print_pretty('<BOLD>'+attribute+'<END>')
         deprecatedMNXM_mnxm = None
-        f_deprecatedMNXM_mnxm = 'deprecatedMNXM_mnxm'+rpCache._ext
-        if not os_path.isfile(outdir+f_deprecatedMNXM_mnxm):
-            print("Generating deprecatedMNXM_mnxm...", end = '', flush=True)
+        f_deprecatedMNXM_mnxm = outdir+attribute+rpCache._ext
+        if not os_path.isfile(f_deprecatedMNXM_mnxm):
+            print("   Generating data...", end = '', flush=True)
             deprecatedMNXM_mnxm = rpCache._m_deprecatedMNXM_mnxm(input_dir+'chem_xref.tsv.gz')
             print_OK()
-            print("Storing deprecatedMNXM_mnxm to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(deprecatedMNXM_mnxm, f_deprecatedMNXM_mnxm)
             print_OK()
         else:
-            print("File "+f_deprecatedMNXM_mnxm+" already exists")
+            print("   Cache file already exists", end = '', flush=True)
+            print_OK()
 
+        attribute = 'mnxm_strc'
+        print_pretty('<BOLD>'+attribute+'<END>')
         mnxm_strc = None
-        f_mnxm_strc = 'mnxm_strc'+rpCache._ext
-        if not os_path.isfile(outdir+f_mnxm_strc):
+        f_mnxm_strc = outdir+attribute+rpCache._ext
+        if not os_path.isfile(f_mnxm_strc):
             if not deprecatedMNXM_mnxm:
-                print("Loading "+f_deprecatedMNXM_mnxm+"...", end = '', flush=True)
-                deprecatedMNXM_mnxm = rpCache._load_cache_from_file(outdir+f_deprecatedMNXM_mnxm)
+                print("   Loading input data from file...", end = '', flush=True)
+                deprecatedMNXM_mnxm = rpCache._load_cache_from_file(f_deprecatedMNXM_mnxm)
                 print_OK()
-            print("Generating mnxm_strc...", end = '', flush=True)
+            print("   Generating data...", end = '', flush=True)
             mnxm_strc = rpCache._m_mnxm_strc(input_dir+'/compounds.tsv.gz', input_dir+'chem_prop.tsv.gz', deprecatedMNXM_mnxm)
             print_OK()
-            print("Storing mnxm_strc to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(mnxm_strc, f_mnxm_strc)
             print_OK()
         else:
-            print("File "+f_mnxm_strc+" already exists")
+            print("   Cache file already exists", end = '', flush=True)
+            print_OK()
 
+        attribute = 'inchikey_mnxm'
+        print_pretty('<BOLD>'+attribute+'<END>')
         inchikey_mnxm = None
-        f_inchikey_mnxm = 'inchikey_mnxm'+rpCache._ext
-        if not os_path.isfile(outdir+f_inchikey_mnxm):
+        f_inchikey_mnxm = outdir+attribute+rpCache._ext
+        if not os_path.isfile(f_inchikey_mnxm):
             if not mnxm_strc:
-                print("Loading "+f_inchikey_mnxm+"...", end = '', flush=True)
+                print("   Loading input data from file...", end = '', flush=True)
                 mnxm_strc = rpCache._load_cache_from_file(f_mnxm_strc)
                 print_OK()
-            print("Generating inchikey_mnxm...", end = '', flush=True)
+            print("   Generating data...", end = '', flush=True)
             inchikey_mnxm = rpCache._m_inchikey_mnxm(mnxm_strc)
             print_OK()
             del mnxm_strc
-            print("Storing inchikey_mnxm to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(inchikey_mnxm, f_inchikey_mnxm)
             print_OK()
         else:
-            print("File "+f_inchikey_mnxm+" already exists")
+            print("   Cache file already exists", end = '', flush=True)
+            print_OK()
 
+        attribute = 'chemXref'
+        print_pretty('<BOLD>'+attribute+'<END>')
         chemXref = None
-        f_chemXref = 'chemXref'+rpCache._ext
-        if not os_path.isfile(outdir+f_chemXref):
+        f_chemXref = outdir+attribute+rpCache._ext
+        if not os_path.isfile(f_chemXref):
             if not deprecatedMNXM_mnxm:
-                print("Loading "+f_deprecatedMNXM_mnxm+"...", end = '', flush=True)
+                print("   Loading input data from file...", end = '', flush=True)
                 deprecatedMNXM_mnxm = rpCache._load_cache_from_file(f_deprecatedMNXM_mnxm)
                 print_OK()
-            print("Generating chemXref...", end = '', flush=True)
+            print("   Generating data...", end = '', flush=True)
             chemXref = rpCache._m_chemXref(input_dir+'chem_xref.tsv.gz', deprecatedMNXM_mnxm)
             print_OK()
-            print("Storing chemXref to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(chemXref, f_chemXref)
             print_OK()
         else:
-            print("File "+f_chemXref+" already exists")
+            print("   Cache file already exists", end = '', flush=True)
+            print_OK()
 
+        attribute = 'chebi_mnxm'
+        print_pretty('<BOLD>'+attribute+'<END>')
         chebi_mnxm = None
-        f_chebi_mnxm = 'chebi_mnxm'+rpCache._ext
-        if not os_path.isfile(outdir+f_chebi_mnxm):
-            print("Generating chebi_mnxm...", end = '', flush=True)
+        f_chebi_mnxm = outdir+attribute+rpCache._ext
+        if not os_path.isfile(f_chebi_mnxm):
+            print("   Generating data...", end = '', flush=True)
             chebi_mnxm = rpCache._m_chebi_mnxm(chemXref)
             print_OK()
             del chemXref
-            print("Storing chebi_mnxm to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(chebi_mnxm, f_chebi_mnxm)
             del chebi_mnxm
             print_OK()
         else:
-            print("File "+f_chebi_mnxm+" already exists")
+            print("   Cache file already exists", end = '', flush=True)
+            print_OK()
 
+        attribute = 'deprecatedMNXR_mnxr'
+        print_pretty('<BOLD>'+attribute+'<END>')
         deprecatedMNXR_mnxr = None
-        f_deprecatedMNXR_mnxr = 'deprecatedMNXR_mnxr'+rpCache._ext
-        if not os_path.isfile(outdir+f_deprecatedMNXR_mnxr):
-            print("Generating deprecatedMNXR_mnxr...", end = '', flush=True)
+        f_deprecatedMNXR_mnxr = outdir+attribute+rpCache._ext
+        if not os_path.isfile(f_deprecatedMNXR_mnxr):
+            print("   Generating data...", end = '', flush=True)
             deprecatedMNXR_mnxr = rpCache._m_deprecatedMNXR_mnxr(input_dir+'reac_xref.tsv.gz')
             print_OK()
-            print("Storing deprecatedMNXR_mnxr to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(deprecatedMNXR_mnxr, f_deprecatedMNXR_mnxr)
             print_OK()
         else:
-            print("File "+f_deprecatedMNXR_mnxr+" already exists")
+            print("   Cache file already exists", end = '', flush=True)
+            print_OK()
 
+        attribute = 'rr_reactions'
+        print_pretty('<BOLD>'+attribute+'<END>')
         rr_reactions = None
-        f_rr_reactions = 'rr_reactions'+rpCache._ext
-        if not os_path.isfile(outdir+f_rr_reactions):
+        f_rr_reactions = outdir+attribute+rpCache._ext
+        if not os_path.isfile(f_rr_reactions):
             if not deprecatedMNXM_mnxm:
-                print("Loading "+f_deprecatedMNXM_mnxm+"...", end = '', flush=True)
+                print("   Loading input data from file...", end = '', flush=True)
                 deprecatedMNXM_mnxm = rpCache._load_cache_from_file(f_deprecatedMNXM_mnxm)
                 print_OK()
             if not deprecatedMNXR_mnxr:
-                print("Loading "+f_deprecatedMNXR_mnxr+"...", end = '', flush=True)
+                print("   Loading input data from file...", end = '', flush=True)
                 deprecatedMNXR_mnxr = rpCache._load_cache_from_file(f_deprecatedMNXR_mnxr)
                 print_OK()
-            print("Generating rr_reactions...", end = '', flush=True)
+            print("   Generating data...", end = '', flush=True)
             rr_reactions = rpCache._m_rr_reactions(input_dir+'retrorules_rr02_flat_all.tsv.gz', deprecatedMNXM_mnxm, deprecatedMNXR_mnxr)
             print_OK()
             del deprecatedMNXR_mnxr
-            print("Storing rr_reactions to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(rr_reactions, f_rr_reactions)
             print_OK()
             del rr_reactions
         else:
-            print("File "+f_rr_reactions+" already exists")
+            print("   Cache file already exists", end = '', flush=True)
+            print_OK()
 
+        attribute = 'compXref, name_compXref'
+        print_pretty('<BOLD>'+attribute+'<END>')
         compXref = name_compXref = None
-        f_compXref = 'compXref'+rpCache._ext
-        f_name_compXref = 'name_compXref'+rpCache._ext
-        if not os_path.isfile(outdir+f_compXref) or not os_path.isfile(outdir+f_name_compXref):
-            print("Generating compXref,name_compXref...", end = '', flush=True)
+        f_compXref = outdir+'compXref'+rpCache._ext
+        f_name_compXref = outdir+'name_compXref'+rpCache._ext
+        if not os_path.isfile(f_compXref) or not os_path.isfile(f_name_compXref):
+            print("   Generating data...", end = '', flush=True)
             compXref,name_compXref = rpCache._m_compXref(input_dir+'comp_xref.tsv.gz')
             print_OK()
-            print("Storing compXref to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(compXref, f_compXref)
             print_OK()
             del compXref
-            print("Storing name_compXref to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(name_compXref, f_name_compXref)
             print_OK()
             del name_compXref
         else:
-            print("Files "+f_compXref+", "+f_name_compXref+" already exist")
+            print("   Cache files already exist", end = '', flush=True)
+            print_OK()
 
+        attribute = 'full_reactions'
+        print_pretty('<BOLD>'+attribute+'<END>')
         full_reactions = None
-        f_full_reactions = 'full_reactions'+rpCache._ext
-        if not os_path.isfile(outdir+f_full_reactions):
-            print("Generating full_reactions...", end = '', flush=True)
+        f_full_reactions = outdir+attribute+rpCache._ext
+        if not os_path.isfile(f_full_reactions):
+            print("   Generating data...", end = '', flush=True)
             if not deprecatedMNXM_mnxm:
-                print("Loading "+f_deprecatedMNXM_mnxm+"...", end = '', flush=True)
+                print("   Loading input data from file...", end = '', flush=True)
                 deprecatedMNXM_mnxm = rpCache._load_cache_from_file(f_deprecatedMNXM_mnxm)
                 print_OK()
             if not deprecatedMNXR_mnxr:
-                print("Loading "+f_deprecatedMNXR_mnxr+"...", end = '', flush=True)
+                print("   Loading input data from file...", end = '', flush=True)
                 deprecatedMNXR_mnxr = rpCache._load_cache_from_file(f_deprecatedMNXR_mnxr)
                 print_OK()
             full_reactions = rpCache._m_full_reactions(input_dir+'rxn_recipes.tsv.gz', deprecatedMNXM_mnxm, deprecatedMNXR_mnxr)
             print_OK()
-            print("Storing full_reactions to file...", end = '', flush=True)
+            print("   Writing data to file...", end = '', flush=True)
             rpCache._store_cache_to_file(full_reactions, f_full_reactions)
             print_OK()
             del full_reactions
         else:
-            print("File "+f_full_reactions+" already exists")
+            print("   Cache file already exists", end = '', flush=True)
+            print_OK()
 
 
     @staticmethod
     def _download_input_cache(url, file, outdir):
         if not os_path.isdir(outdir):
             os_mkdir(outdir)
-        filename = outdir+'/'+file
+        filename = outdir+file
         if not os_path.isfile(filename):
             print("Downloading "+file+"...", end = '', flush=True)
             start_time = time.time()
@@ -580,7 +608,7 @@ class rpCache:
     @staticmethod
     def _deprecatedMNX(xref_path):
         deprecatedMNX_mnx = {}
-        with gzip_open(xref_path) as f:
+        with gzip_open(xref_path, 'rt') as f:
             c = csv_reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
@@ -655,7 +683,7 @@ class rpCache:
     @staticmethod
     def _m_mnxm_strc(rr_compounds_path, chem_prop_path, deprecatedMNXM_mnxm):
         mnxm_strc = {}
-        for row in csv_DictReader(gzip_open(rr_compounds_path), delimiter='\t'):
+        for row in csv_DictReader(gzip_open(rr_compounds_path, 'rt'), delimiter='\t'):
             tmp = {'formula':  None,
                     'smiles': None,
                     'inchi': row['inchi'],
@@ -670,7 +698,7 @@ class rpCache:
                 rpCache.logger.warning('Could not convert some of the structures: '+str(tmp))
                 rpCache.logger.warning(e)
             mnxm_strc[tmp['mnxm']] = tmp
-        with gzip_open(chem_prop_path) as f:
+        with gzip_open(chem_prop_path, 'rt') as f:
             c = csv_reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
@@ -730,7 +758,7 @@ class rpCache:
     @staticmethod
     def _m_chemXref(chem_xref_path, deprecatedMNXM_mnxm):
         chemXref = {}
-        with gzip_open(chem_xref_path) as f:
+        with gzip_open(chem_xref_path, 'rt') as f:
             c = csv_reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
@@ -793,7 +821,7 @@ class rpCache:
             #    next(reader)
             #    rule = {}
             #    for row in reader:
-            for row in csv_DictReader(gzip_open(rules_rall_path), delimiter='\t'):
+            for row in csv_DictReader(gzip_open(rules_rall_path, 'rt'), delimiter='\t'):
                 #NOTE: as of now all the rules are generated using MNX
                 #but it may be that other db are used, we are handling this case
                 #WARNING: can have multiple products so need to seperate them
@@ -854,7 +882,7 @@ class rpCache:
         compXref = {}
         name_compXref = {}
         try:
-            with gzip_open(compXref_path) as f:
+            with gzip_open(compXref_path, 'rt') as f:
                 c = csv_reader(f, delimiter='\t')
                 #not_recognised = []
                 for row in c:
@@ -906,7 +934,7 @@ class rpCache:
                            '(n-1)': 0, '(n-2)': -1}
         reaction = {}
         try:
-            for row in csv_DictReader(gzip_open(rxn_recipes_path), delimiter='\t'):
+            for row in csv_DictReader(gzip_open(rxn_recipes_path, 'rt'), delimiter='\t'):
                 tmp = {} # makes sure that if theres an error its not added
                 #parse the reaction equation
                 if not len(row['Equation'].split('='))==2:
