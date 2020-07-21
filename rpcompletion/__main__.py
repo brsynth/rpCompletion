@@ -2,20 +2,22 @@
 
 from os import path, mkdir
 from logging import error as logging_error
+from sys import argv
 
-from rpcompletion import rpCompletion, build_args_parser
+from rpcompletion import rpCache, rpCompletion, build_args_parser
 
+
+def gen_cache():
+    rpCache.generate_cache('ftp://ftp.vital-it.ch/databases/metanetx/MNXref/3.2/', './cache-3.2')
+    exit(0)
 
 def _cli():
     parser = build_args_parser()
     args  = parser.parse_args()
 
-    if args.pubchem_search.lower() in ['true', 't']:
-        args.pubchem_search = True
-    else:
-        args.pubchem_search = False
+    args.pubchem_search = args.pubchem_search.lower() in ['true', 't']
 
-    rpcompletion = rpCompletion(args.store_mode)
+    rpcompletion = rpCompletion(db=args.store_mode)
 
     try:
         rpsbml_paths = rpcompletion.rp2ToSBML(
@@ -37,4 +39,7 @@ def _cli():
 
 
 if __name__ == '__main__':
-    _cli()
+    if '--gen_cache' in argv[1:]:
+        gen_cache()
+    else:
+        _cli()

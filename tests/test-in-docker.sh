@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../.env
+source ../extras/.env
 
 PACKAGE=$PACKAGE \
 HOMEDIR=$HOMEDIR \

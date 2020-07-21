@@ -34,18 +34,32 @@ jobs:
 
   Conda:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7]
+
     container: docker://continuumio/anaconda3
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Conda
+    - name: Waiting for module availablity on PyPi...
+      run: |
+        sleep 30
+    - name: Get module from PyPi
+      run: |
+        conda skeleton pypi rpcompletion
+    - name: Customize recipe
+      run: |
+        sed -i 's/ redis/ redis-py/g' rpcompletion/meta.yaml
+    - name: Add channels
       run: |
         conda config \
+          --add channels brsynth \
           --add channels sbmlteam \
-          --add channels anaconda \
-          --add channels brsynth
-    - name: Build package
+          --add channels anaconda
+    - name: Build for Python ${{ matrix.python-version }}
       run: |
-        python setup.py bdist_conda
+        conda-build --python ${{ matrix.python-version }} rpcompletion
     - name: Upload package
       env:
         CONDA_USERNAME: ${{ secrets.CONDA_USERNAME }}
