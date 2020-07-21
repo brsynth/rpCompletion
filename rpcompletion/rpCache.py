@@ -66,7 +66,7 @@ class rpCache:
     logger = logging_getLogger(__name__)
     logger.info('Started instance of rpCache')
 
-    _input_cache_url = 'ftp://ftp.vital-it.ch/databases/metanetx/MNXref/3.2/'
+    # _input_cache_url = 'ftp://ftp.vital-it.ch/databases/metanetx/MNXref/3.2/'
     _cache_url       = 'https://github.com/brsynth/rpCache-data/raw/master/'
 
     # static attribues
@@ -80,30 +80,42 @@ class rpCache:
 
     # name: sha512sum
     _input_cache_files = {
-            'chem_xref.tsv':    '8011352745fdac0f29c710e6bc589684371531fd5a1e99d17ce92fd4382148563cc0089fde394a7cf5f89d31344d521e007faf2066e22073e07309001d9eb7fa',
-            'reac_xref.tsv':    '44fe0170dc9a13c10dbbe2435e407286c272c3e834d1696fad102c8a366d51717ace3da37cec31ab8ab2420be440c483f7c0882e34b2e38493a7c0df56583dac',
-            'rr_compounds.tsv': '4642f694fd3108e897ba414d0b8ffa78100554d8cd1950315e383e8e8b2c6a744ec983eb1b634ac1636de4577c99fa5ed6a012a85e2f5879168ed1a4b4799a27',
-            'chem_prop.tsv':    '535d0ce9f5cf120160559dbb9b09925b2ccb7bc54e83cd206c50a9bbd9c16981adb47e24e1d9db953f293c8e6973e3a6ec4e85d1b64416ae73d9cb67f8840097',
-            'rules_rall.tsv':   '1795fb190ac6f798592f994c96d4e9678ec8d7fd99011dc128faf79b9a19d73296cfa204dd8483ff9e56797903c77d5038ed782dcf42d5dea13daecdba77e95f',
-            'comp_xref.tsv':    'e8ca37592d92afb9f1c30ae26980c29fd139b08b36daded1706fbe02784b4b58f8fb9d765fc5397041cb53435ef53ab68d7d5d932d21e2ce3994a6aef364f736',
-            'rxn_recipes.tsv':  'dbc0a8acb1504fa5745ecf14a99aeb9fb5dcc89e8527216f0f9c87c590910840b547c984311fa0d3651d94df2dfbac9430e803f3b807499f3c925910f8f926bd'
+            'chem_xref.tsv.gz':    'e558110990dcc75af943863790dc55360fd2d40ecb17d02335377671e80f0ab3738fd556acb340e03e48dd1afdec3eece1e92df1e18bc24e7445f24f778a10da',
+            'reac_xref.tsv.gz':    '48b991cf4a9c2ca573d395cf35c378881ed79e87772827647bfab2f6345499698664e07195ec10b342fc0164304dbd2363cccff1a1182225e6afebce3c16448b',
+            'compounds.tsv.gz':    '719716bb880257bd014e045c03eb8dd12e2bbeba3aa52e38e9632ce605817b9dc09530e81fadd25542c0a439bdb81e1dfbd3a38f35b30b061845d1a880dbfe01',
+            'chem_prop.tsv.gz':    'f2d220d1f0425e5e47f01e7deccfa46b60094d43b9f62b191ffb0fab8c00ef79e87c3b71d10bdcd26020608094f24884f51b3ebc3d7d3c9a6d594c6eaa324c66',
+            'retrorules_rr02_flat_all.tsv.gz':   '890bdd24042c0192b5538964d775feefcb6cff9ad5f35690bfbfc5ae09334dd19df6828cdfc7f57a2018e090571517122b99d8760128052af898c638ae667e24',
+            'comp_xref.tsv.gz':    '913a827f3645fda1699676ae6c32b9d7a8debae97ce7b0c386d8447f4eee5aa721d31bfb856d4092b3d5e987a8f19a6fe4bd28ddf1c5df5f85e71c3625bd1d81',
+            'rxn_recipes.tsv.gz':  'dc0624f5ed7ab0b691d9a6ba02571a5cf334cfdb3109e78c98708e31574c46aeac2a97e9433788d80490ff80337679ccfd706cbb8e71a11cdc6122573bb69b0f'
             }
+
+    _attributes = [
+            'deprecatedMNXM_mnxm',
+            'deprecatedMNXR_mnxr',
+            'mnxm_strc',
+            'chemXref',
+            'chebi_mnxm',
+            'rr_reactions',
+            'inchikey_mnxm',
+            'compXref',
+            'name_compXref',
+            'full_reactions'
+    ]
 
     # name: sha512sum
     _cache_files = {
-            'deprecatedMNXM_mnxm': '698a3e83cf4f9206ea2644c9c35a9af53957838baaae6efb245d02b6b8d0ea8b25c75008e562b99ba3e0189e50ee47655376f2d0635f6206e0015f91f0e4bad8',
-            'deprecatedMNXR_mnxr': '51554c6f6ae99c6755da7496208b3feec30547bc4cf3007d9fd30f46fa4c0cc73bad5aeb743dca07e32711c4346504296bee776d135fb18e96c891a0086fc87e',
-            'mnxm_strc':           '0021ef63165d75ee6b8c209ccf14b8a1b8b7b263b4077f544729c47b5525f66511c3fa578fd2089201abb61693085b9912639e62f7b7481d06ad1f38bfc2dd8e',
-            'chemXref':            '7d559cc7389c0cb2bd10f92e6e845bb5724be64d1624adc4e447111fc63599bb69396cd0cc3066a6bb19910c00e266c97e21b1254d9a6dc9da3a8b033603fcff',
-            'chebi_mnxm':          '587d6c5206ee94e63af6d9eaf49fd5e2ca417308b3ece8a7f47e916c42376e2c8635a031ce26dc815cd7330f2323054a44d23951e416a9a29c5a9a2ab51e8953',
-            'rr_reactions':        '8783aaa65a281c4a7ab3a82a6dc99620418ed2be4a739f46db8ee304fcb3536a78fed5a955e1c373a20c3e7d3673793157c792b4429ecb5c68ddaddb1a0f7de7',
-            'inchikey_mnxm':       '8007480fc607caf41f0f9a93beb66c7caa66c37a3d01a809f6b94bc0df469cec72091e8cc0fbabb3bd8775e9776b928ecda2779fc545c7e4b9e71c504f9510ce',
-            'compXref':            'afc2ad3d31366a8f7fe1604fa49c190ade6d46bc8915f30bd20fdfdfc663c979bb10ca55ad10cadec6002a17add46639c70e7adf89cb66c57ed004fd3e4f0051',
-            'name_compXref':       '81c673fe1940e25a6a9722fd74b16bc30e1590db0c40810f541ad4ffba7ae04c01268b929d4bf944e84095a0c2a1d0079d1861bc1df3e8308fbb6b35e0aaf107',
-            'full_reactions':      '599e4de4935d2ba649c0b526d8aeef6f0e3bf0ed9ee20adad65cb86b078ac139e4cc9758945c2bb6da1c6840867239c5415cb5bceeb80164798ff627aac0a985'
+            _attributes[0]+'.gz': '698a3e83cf4f9206ea2644c9c35a9af53957838baaae6efb245d02b6b8d0ea8b25c75008e562b99ba3e0189e50ee47655376f2d0635f6206e0015f91f0e4bad8',
+            _attributes[1]+'.gz': '51554c6f6ae99c6755da7496208b3feec30547bc4cf3007d9fd30f46fa4c0cc73bad5aeb743dca07e32711c4346504296bee776d135fb18e96c891a0086fc87e',
+            _attributes[2]+'.gz': '0021ef63165d75ee6b8c209ccf14b8a1b8b7b263b4077f544729c47b5525f66511c3fa578fd2089201abb61693085b9912639e62f7b7481d06ad1f38bfc2dd8e',
+            _attributes[3]+'.gz': '7d559cc7389c0cb2bd10f92e6e845bb5724be64d1624adc4e447111fc63599bb69396cd0cc3066a6bb19910c00e266c97e21b1254d9a6dc9da3a8b033603fcff',
+            _attributes[4]+'.gz': '587d6c5206ee94e63af6d9eaf49fd5e2ca417308b3ece8a7f47e916c42376e2c8635a031ce26dc815cd7330f2323054a44d23951e416a9a29c5a9a2ab51e8953',
+            _attributes[5]+'.gz': '8783aaa65a281c4a7ab3a82a6dc99620418ed2be4a739f46db8ee304fcb3536a78fed5a955e1c373a20c3e7d3673793157c792b4429ecb5c68ddaddb1a0f7de7',
+            _attributes[6]+'.gz': '8007480fc607caf41f0f9a93beb66c7caa66c37a3d01a809f6b94bc0df469cec72091e8cc0fbabb3bd8775e9776b928ecda2779fc545c7e4b9e71c504f9510ce',
+            _attributes[7]+'.gz': 'afc2ad3d31366a8f7fe1604fa49c190ade6d46bc8915f30bd20fdfdfc663c979bb10ca55ad10cadec6002a17add46639c70e7adf89cb66c57ed004fd3e4f0051',
+            _attributes[8]+'.gz': '81c673fe1940e25a6a9722fd74b16bc30e1590db0c40810f541ad4ffba7ae04c01268b929d4bf944e84095a0c2a1d0079d1861bc1df3e8308fbb6b35e0aaf107',
+            _attributes[9]+'.gz': '599e4de4935d2ba649c0b526d8aeef6f0e3bf0ed9ee20adad65cb86b078ac139e4cc9758945c2bb6da1c6840867239c5415cb5bceeb80164798ff627aac0a985'
             }
 
-    _attributes = list(_cache_files.keys())
 
 
     _ext = '.json.gz'
@@ -188,7 +200,7 @@ class rpCache:
                     r_exceptions.InvalidSchema,
                     r_exceptions.ConnectionError):
                 print_FAILED()
-                rpCache.generate_cache(rpCache._input_cache_url, self._cache_dir)
+                rpCache.generate_cache(self._cache_dir)
                 if self.store_mode=='file':
                     self._check_or_load_cache_in_memory(self._cache_dir)
                 else:
@@ -260,23 +272,24 @@ class rpCache:
 
 
     @staticmethod
-    def generate_cache(url, outdir):
+    def generate_cache(outdir):
 
         if not os_path.isdir(outdir):
             os_mkdir(outdir)
+
+        url = rpCache._cache_url
 
         # FETCH INPUT_CACHE FILES
         input_dir = 'input-'+os_path.basename(os_path.normpath(outdir))+'/'
         for file in rpCache._input_cache_files.keys():
             rpCache._download_input_cache(url, file, input_dir)
 
-
         # GENERATE CACHE FILES AND STORE THEM TO DISK
         deprecatedMNXM_mnxm = None
         f_deprecatedMNXM_mnxm = 'deprecatedMNXM_mnxm'+rpCache._ext
         if not os_path.isfile(outdir+f_deprecatedMNXM_mnxm):
             print("Generating deprecatedMNXM_mnxm...", end = '', flush=True)
-            deprecatedMNXM_mnxm = rpCache._m_deprecatedMNXM_mnxm(input_dir+'chem_xref.tsv')
+            deprecatedMNXM_mnxm = rpCache._m_deprecatedMNXM_mnxm(input_dir+'chem_xref.tsv.gz')
             print_OK()
             print("Storing deprecatedMNXM_mnxm to file...", end = '', flush=True)
             rpCache._store_cache_to_file(deprecatedMNXM_mnxm, f_deprecatedMNXM_mnxm)
@@ -292,7 +305,7 @@ class rpCache:
                 deprecatedMNXM_mnxm = rpCache._load_cache_from_file(outdir+f_deprecatedMNXM_mnxm)
                 print_OK()
             print("Generating mnxm_strc...", end = '', flush=True)
-            mnxm_strc = rpCache._m_mnxm_strc(input_dir+'/rr_compounds.tsv', input_dir+'chem_prop.tsv', deprecatedMNXM_mnxm)
+            mnxm_strc = rpCache._m_mnxm_strc(input_dir+'/compounds.tsv.gz', input_dir+'chem_prop.tsv.gz', deprecatedMNXM_mnxm)
             print_OK()
             print("Storing mnxm_strc to file...", end = '', flush=True)
             rpCache._store_cache_to_file(mnxm_strc, f_mnxm_strc)
@@ -325,7 +338,7 @@ class rpCache:
                 deprecatedMNXM_mnxm = rpCache._load_cache_from_file(f_deprecatedMNXM_mnxm)
                 print_OK()
             print("Generating chemXref...", end = '', flush=True)
-            chemXref = rpCache._m_chemXref(input_dir+'chem_xref.tsv', deprecatedMNXM_mnxm)
+            chemXref = rpCache._m_chemXref(input_dir+'chem_xref.tsv.gz', deprecatedMNXM_mnxm)
             print_OK()
             print("Storing chemXref to file...", end = '', flush=True)
             rpCache._store_cache_to_file(chemXref, f_chemXref)
@@ -351,7 +364,7 @@ class rpCache:
         f_deprecatedMNXR_mnxr = 'deprecatedMNXR_mnxr'+rpCache._ext
         if not os_path.isfile(outdir+f_deprecatedMNXR_mnxr):
             print("Generating deprecatedMNXR_mnxr...", end = '', flush=True)
-            deprecatedMNXR_mnxr = rpCache._m_deprecatedMNXR_mnxr(input_dir+'reac_xref.tsv')
+            deprecatedMNXR_mnxr = rpCache._m_deprecatedMNXR_mnxr(input_dir+'reac_xref.tsv.gz')
             print_OK()
             print("Storing deprecatedMNXR_mnxr to file...", end = '', flush=True)
             rpCache._store_cache_to_file(deprecatedMNXR_mnxr, f_deprecatedMNXR_mnxr)
@@ -371,7 +384,7 @@ class rpCache:
                 deprecatedMNXR_mnxr = rpCache._load_cache_from_file(f_deprecatedMNXR_mnxr)
                 print_OK()
             print("Generating rr_reactions...", end = '', flush=True)
-            rr_reactions = rpCache._m_rr_reactions(input_dir+'rules_rall.tsv', deprecatedMNXM_mnxm, deprecatedMNXR_mnxr)
+            rr_reactions = rpCache._m_rr_reactions(input_dir+'retrorules_rr02_flat_all.tsv.gz', deprecatedMNXM_mnxm, deprecatedMNXR_mnxr)
             print_OK()
             del deprecatedMNXR_mnxr
             print("Storing rr_reactions to file...", end = '', flush=True)
@@ -386,7 +399,7 @@ class rpCache:
         f_name_compXref = 'name_compXref'+rpCache._ext
         if not os_path.isfile(outdir+f_compXref) or not os_path.isfile(outdir+f_name_compXref):
             print("Generating compXref,name_compXref...", end = '', flush=True)
-            compXref,name_compXref = rpCache._m_compXref(input_dir+'comp_xref.tsv')
+            compXref,name_compXref = rpCache._m_compXref(input_dir+'comp_xref.tsv.gz')
             print_OK()
             print("Storing compXref to file...", end = '', flush=True)
             rpCache._store_cache_to_file(compXref, f_compXref)
@@ -411,7 +424,7 @@ class rpCache:
                 print("Loading "+f_deprecatedMNXR_mnxr+"...", end = '', flush=True)
                 deprecatedMNXR_mnxr = rpCache._load_cache_from_file(f_deprecatedMNXR_mnxr)
                 print_OK()
-            full_reactions = rpCache._m_full_reactions(input_dir+'rxn_recipes.tsv', deprecatedMNXM_mnxm, deprecatedMNXR_mnxr)
+            full_reactions = rpCache._m_full_reactions(input_dir+'rxn_recipes.tsv.gz', deprecatedMNXM_mnxm, deprecatedMNXR_mnxr)
             print_OK()
             print("Storing full_reactions to file...", end = '', flush=True)
             rpCache._store_cache_to_file(full_reactions, f_full_reactions)
@@ -444,32 +457,34 @@ class rpCache:
 
 
         # 3xCommon + rpReader
-        if file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
-            download(url+file, outdir+'/'+file)
+        if file in ['reac_xref.tsv.gz', 'chem_xref.tsv.gz', 'chem_prop.tsv.gz', 'comp_xref.tsv.gz']:
+            download(url+'metanetx/'+file, outdir+file)
 
         #TODO: need to add this file to the git or another location
-        if file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
-            download('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
-                     outdir+'/rr02_more_data.tar.gz')
-            tar = tarfile_open(outdir+'/rr02_more_data.tar.gz', 'r:gz')
-            tar.extractall(outdir)
-            tar.close()
-            shutil_move(outdir+'/rr02_more_data/compounds.tsv',
-                        outdir+'/rr_compounds.tsv')
-            shutil_move(outdir+'/rr02_more_data/rxn_recipes.tsv',
-                        outdir)
-            os_rm(outdir+'/rr02_more_data.tar.gz')
-            shutil_rmtree(outdir+'/rr02_more_data')
+        if file in ['compounds.tsv.gz', 'rxn_recipes.tsv.gz']:
+            download(url+'rr02_more_data/'+file,
+                     outdir+file)
+            # tar = tarfile_open(outdir+'/rr02_more_data.tar.gz', 'r:gz')
+            # tar.extractall(outdir)
+            # tar.close()
+            # shutil_move(outdir+'/rr02_more_data/compounds.tsv',
+            #             outdir+'/rr_compounds.tsv')
+            # shutil_move(outdir+'/rr02_more_data/rxn_recipes.tsv',
+            #             outdir)
+            # os_rm(outdir+'/rr02_more_data.tar.gz')
+            # shutil_rmtree(outdir+'/rr02_more_data')
 
-        if file=='rules_rall.tsv':
-            download('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
-                     outdir+'/retrorules_rr02_rp3_hs.tar.gz')
-            tar = tarfile_open(outdir+'/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
-            tar.extractall(outdir)
-            tar.close()
-            shutil_move(outdir+'/retrorules_rr02_rp3_hs/retrorules_rr02_flat_all.tsv', outdir+'/rules_rall.tsv')
-            os_rm(outdir+'/retrorules_rr02_rp3_hs.tar.gz')
-            shutil_rmtree(outdir+'/retrorules_rr02_rp3_hs')
+        if file=='retrorules_rr02_flat_all.tsv.gz':
+            download(url+'retrorules_rr02_rp3_hs/'+file,
+                     outdir+file)
+            # download('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
+            #          outdir+'/retrorules_rr02_rp3_hs.tar.gz')
+            # tar = tarfile_open(outdir+'/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
+            # tar.extractall(outdir)
+            # tar.close()
+            # shutil_move(outdir+'/retrorules_rr02_rp3_hs/retrorules_rr02_flat_all.tsv', outdir+'/rules_rall.tsv')
+            # os_rm(outdir+'/retrorules_rr02_rp3_hs.tar.gz')
+            # shutil_rmtree(outdir+'/retrorules_rr02_rp3_hs')
 
 
 
@@ -565,7 +580,7 @@ class rpCache:
     @staticmethod
     def _deprecatedMNX(xref_path):
         deprecatedMNX_mnx = {}
-        with open(xref_path) as f:
+        with gzip_open(xref_path) as f:
             c = csv_reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
@@ -640,7 +655,7 @@ class rpCache:
     @staticmethod
     def _m_mnxm_strc(rr_compounds_path, chem_prop_path, deprecatedMNXM_mnxm):
         mnxm_strc = {}
-        for row in csv_DictReader(open(rr_compounds_path), delimiter='\t'):
+        for row in csv_DictReader(gzip_open(rr_compounds_path), delimiter='\t'):
             tmp = {'formula':  None,
                     'smiles': None,
                     'inchi': row['inchi'],
@@ -655,7 +670,7 @@ class rpCache:
                 rpCache.logger.warning('Could not convert some of the structures: '+str(tmp))
                 rpCache.logger.warning(e)
             mnxm_strc[tmp['mnxm']] = tmp
-        with open(chem_prop_path) as f:
+        with gzip_open(chem_prop_path) as f:
             c = csv_reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
@@ -715,7 +730,7 @@ class rpCache:
     @staticmethod
     def _m_chemXref(chem_xref_path, deprecatedMNXM_mnxm):
         chemXref = {}
-        with open(chem_xref_path) as f:
+        with gzip_open(chem_xref_path) as f:
             c = csv_reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
@@ -773,12 +788,12 @@ class rpCache:
     def _m_rr_reactions(rules_rall_path, deprecatedMNXM_mnxm, deprecatedMNXR_mnxr):
         rr_reactions = {}
         try:
-            #with open(rules_rall_path, 'r') as f:
+            #with gzip_open(rules_rall_path, 'r') as f:
             #    reader = csv.reader(f, delimiter = '\t')
             #    next(reader)
             #    rule = {}
             #    for row in reader:
-            for row in csv_DictReader(open(rules_rall_path), delimiter='\t'):
+            for row in csv_DictReader(gzip_open(rules_rall_path), delimiter='\t'):
                 #NOTE: as of now all the rules are generated using MNX
                 #but it may be that other db are used, we are handling this case
                 #WARNING: can have multiple products so need to seperate them
@@ -839,7 +854,7 @@ class rpCache:
         compXref = {}
         name_compXref = {}
         try:
-            with open(compXref_path) as f:
+            with gzip_open(compXref_path) as f:
                 c = csv_reader(f, delimiter='\t')
                 #not_recognised = []
                 for row in c:
@@ -891,7 +906,7 @@ class rpCache:
                            '(n-1)': 0, '(n-2)': -1}
         reaction = {}
         try:
-            for row in csv_DictReader(open(rxn_recipes_path), delimiter='\t'):
+            for row in csv_DictReader(gzip_open(rxn_recipes_path), delimiter='\t'):
                 tmp = {} # makes sure that if theres an error its not added
                 #parse the reaction equation
                 if not len(row['Equation'].split('='))==2:

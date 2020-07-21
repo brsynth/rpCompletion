@@ -8,7 +8,7 @@ from rpcompletion import rpCache, rpCompletion, build_args_parser
 
 
 def gen_cache():
-    rpCache.generate_cache('ftp://ftp.vital-it.ch/databases/metanetx/MNXref/3.2/', './cache-3.2')
+    rpCache.generate_cache('./cache-3.2')
     exit(0)
 
 def _cli():
