@@ -19,7 +19,7 @@ class Test_Main(TestCase):
 
     def test_db(self):
         tempdir = TemporaryDirectory()
-        rpcompletion = rpCompletion('db')
+        rpcompletion = rpCompletion('localhost')
         rpsbml_paths = rpcompletion.rp2ToSBML(
                                  self.data_path+'/rp2_pathways.csv',
                                  self.data_path+'/rp2paths_compounds.csv',
