@@ -1,5 +1,6 @@
 1.0.2 - Jul 21, 2020
     - Create a Python module
+    - Do not start redis server from the module, it has to be up if needed
 
 1.0.1 - Jul 13, 2020
     - Documentation update
