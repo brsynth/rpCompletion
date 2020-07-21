@@ -448,7 +448,7 @@ class rpCache:
         if file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
             if url.lower().startswith('http'):
               req = Request(url+file)
-            else
+            else:
               raise ValueError from None
             with urlopen(req) as response:
                 with open(outdir+'/'+file, 'wb') as f:
