@@ -8,7 +8,7 @@ from logging import getLogger as logging_getLogger
 from json import dump as json_dump
 from json import load as json_load
 from gzip import open as gzip_open
-from urllib.request import urlretrieve as urllib_request_urlretrieve
+from urllib.request import Request, urlopen
 from re import findall as re_findall
 from tarfile import open as tarfile_open
 from shutil import move as shutil_move
@@ -22,7 +22,6 @@ from tarfile import open as tf_open
 from redis import StrictRedis
 from credisdict import CRedisDict, wait_for_redis
 import redis_server
-from subprocess import run as proc_run
 from subprocess import Popen,PIPE
 from argparse import ArgumentParser as argparse_ArgParser
 from hashlib import sha512
@@ -447,7 +446,14 @@ class rpCache:
 
         # 3xCommon + rpReader
         if file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
-            urllib_request_urlretrieve(url+file, outdir+'/'+file)
+            if url.lower().startswith('http'):
+              req = Request(url+file)
+            else
+              raise ValueError from None
+            with urlopen(req) as response:
+                with open(outdir+'/'+file, 'wb') as f:
+                    f.write(response.read())
+            # urllib_request_urlretrieve(url+file, outdir+'/'+file)
 
         #TODO: need to add this file to the git or another location
         if file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
