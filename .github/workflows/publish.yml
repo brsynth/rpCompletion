@@ -48,9 +48,6 @@ jobs:
     - name: Get module from PyPi
       run: |
         conda skeleton pypi rpcompletion
-    - name: Customize recipe
-      run: |
-        sed -i 's/ redis/ redis-py/g' rpcompletion/meta.yaml
     - name: Add channels
       run: |
         conda config \
