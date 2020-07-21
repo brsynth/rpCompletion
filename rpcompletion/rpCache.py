@@ -21,7 +21,7 @@ from tarfile import open as tf_open
 from redis import StrictRedis
 from credisdict import CRedisDict, wait_for_redis
 import redis_server
-from subprocess import Popen,PIPE
+# from subprocess import Popen,PIPE
 from argparse import ArgumentParser as argparse_ArgParser
 from hashlib import sha512
 from pathlib import Path
@@ -68,7 +68,7 @@ class rpCache:
     logger.info('Started instance of rpCache')
 
     # _input_cache_url = 'ftp://ftp.vital-it.ch/databases/metanetx/MNXref/3.2/'
-    _cache_url       = 'https://github.com/brsynth/rpCache-data/raw/master/'
+    _cache_url       = 'https://gitlab.com/breakthewall/rpcache-data/-/raw/master/'
 
     # static attribues
     _convertMNXM = {'MNXM162231': 'MNXM6',
@@ -143,17 +143,19 @@ class rpCache:
         if self.store_mode!='file':
             self.redis = StrictRedis(host=self.store_mode, port=6379, db=0, decode_responses=True)
             if not wait_for_redis(self.redis, self._db_timeout):
+                # rpCache.logger.critical("Database "+self.store_mode+" is not reachable")
+                # rpCache.logger.info("Trying local redis...")
+                # self.redis = StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
+                # if not wait_for_redis(self.redis, self._db_timeout):
+                #     rpCache.logger.critical("Database on localhost is not reachable")
+                #     rpCache.logger.info("Start local redis...")
+                #     p1 = Popen([redis_server.REDIS_SERVER_PATH], stdout=PIPE)
+                #     self.redis = StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
+                #     if not wait_for_redis(self.redis, self._db_timeout):
+                #         rpCache.logger.critical("Database on localhost is not reachable")
+                #         exit()
                 rpCache.logger.critical("Database "+self.store_mode+" is not reachable")
-                rpCache.logger.info("Trying local redis...")
-                self.redis = StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
-                if not wait_for_redis(self.redis, self._db_timeout):
-                    rpCache.logger.critical("Database on localhost is not reachable")
-                    rpCache.logger.info("Start local redis...")
-                    p1 = Popen([redis_server.REDIS_SERVER_PATH], stdout=PIPE)
-                    self.redis = StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
-                    if not wait_for_redis(self.redis, self._db_timeout):
-                        rpCache.logger.critical("Database on localhost is not reachable")
-                        exit()
+                exit()
             self.deprecatedMNXM_mnxm = CRedisDict('deprecatedMNXM_mnxm', self.redis)
             self.deprecatedMNXR_mnxr = CRedisDict('deprecatedMNXR_mnxr', self.redis)
             self.mnxm_strc = CRedisDict('mnxm_strc', self.redis)
