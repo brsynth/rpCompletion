@@ -394,7 +394,7 @@ class rpCache:
             print("Generating compXref,name_compXref...", end = '', flush=True)
             compXref,name_compXref = rpCache._m_compXref(input_dir+'comp_xref.tsv')
             print_OK()
-            print("Storing "+_attr_name+" to file...", end = '', flush=True)
+            print("Storing compXref to file...", end = '', flush=True)
             rpCache._store_cache_to_file(compXref, f_compXref)
             print_OK()
             del compXref
