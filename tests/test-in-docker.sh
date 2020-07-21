@@ -16,6 +16,8 @@ else
   file=$@
 fi
 
+`find /usr/loca/lib -name redis-server`
+
 PACKAGE=$PACKAGE \
 HOMEDIR=$HOMEDIR \
 docker-compose \
