@@ -6,8 +6,7 @@ _readme = 'README.md'
 _extras_path = 'extras'
 
 with open(_extras_path+'/.env', 'r') as f:
-    for line in fp:
-        line = f.readline()
+    for line in f:
         if line.startswith('PACKAGE='):
             _package = line.splitlines()[0].split('=')[1].lower()
         if line.startswith('URL='):
