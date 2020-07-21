@@ -5,12 +5,8 @@ from rdkit.Chem import MolFromSmiles, MolFromInchi, MolToSmiles, MolToInchi, Mol
 from csv import DictReader as csv_DictReader
 from csv import reader as csv_reader
 from logging import getLogger as logging_getLogger
-from pickle import load as pickle_load
-from pickle import dumps as pickle_dumps
 from json import dump as json_dump
 from json import load as json_load
-from json import dumps as json_dumps
-from json import loads as json_loads
 from gzip import open as gzip_open
 from urllib.request import urlretrieve as urllib_request_urlretrieve
 from re import findall as re_findall
@@ -503,7 +499,7 @@ class rpCache:
 
     ## Method to store data into file
     #
-    # Store data into file as pickles (to store dictionnary structure)
+    # Store data into file as json (to store dictionnary structure)
     #
     #  @param self Object pointer
     #  @param data Data to write into file
