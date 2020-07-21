@@ -6,17 +6,18 @@ _readme = 'README.md'
 _extras_path = 'extras'
 
 with open(_extras_path+'/.env', 'r') as f:
-    line = f.readline()
-    if line.startswith('PACKAGE='):
-        _package = line.splitlines()[0].split('=')[1].lower()
-    if line.startswith('URL='):
-        _url = line.splitlines()[0].split('=')[1].lower()
-    if line.startswith('AUTHORS='):
-        _authors = line.splitlines()[0].split('=')[1].lower()
-    if line.startswith('DESCR='):
-        _descr = line.splitlines()[0].split('=')[1].lower()
-    if line.startswith('CORR_AUTHOR='):
-        _corr_author = line.splitlines()[0].split('=')[1].lower()
+    for line in fp:
+        line = f.readline()
+        if line.startswith('PACKAGE='):
+            _package = line.splitlines()[0].split('=')[1].lower()
+        if line.startswith('URL='):
+            _url = line.splitlines()[0].split('=')[1].lower()
+        if line.startswith('AUTHORS='):
+            _authors = line.splitlines()[0].split('=')[1].lower()
+        if line.startswith('DESCR='):
+            _descr = line.splitlines()[0].split('=')[1].lower()
+        if line.startswith('CORR_AUTHOR='):
+            _corr_author = line.splitlines()[0].split('=')[1].lower()
 
 with open(_readme, 'r') as f:
     long_description = f.read()
