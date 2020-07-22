@@ -57,7 +57,7 @@ jobs:
           --add channels brsynth \
           --add channels sbmlteam \
           --add channels anaconda \
-          --add channels auto
+          --add channels conda-forge
     - name: Build for Python ${{ matrix.python-version }}
       run: |
         conda-build --python ${{ matrix.python-version }} rpcompletion
