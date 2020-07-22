@@ -34,6 +34,7 @@ In order to save memory space, cache data can be loaded once in a database (redi
 
 ## Install
 ### From pip
+rpCompletion requires [RDKit](https://www.RDKit.org) which is not available through pip.
 ```sh
 [sudo] python -m pip install rpcompletion
 ```
