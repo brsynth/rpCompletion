@@ -48,16 +48,18 @@ jobs:
     - name: Get module from PyPi
       run: |
         conda skeleton pypi rpcompletion
-    # - name: Customize recipe
-    #   run: |
-    #     sed -i 's/redis-server/redis/g' rpcompletion/meta.yaml
+    - name: Customize recipe
+      run: |
+        sed  '/\ \ host\:/a \ \ \ \ - redis' rpcompletion/meta.yaml
+        sed  '/\ \ run\:/a \ \ \ \ - rdkit' rpcompletion/meta.yaml
     - name: Add channels
       run: |
         conda config \
           --add channels brsynth \
           --add channels sbmlteam \
           --add channels anaconda \
-          --add channels conda-forge
+          --add channels conda-forge \
+          --add channels rdkit
     - name: Build for Python ${{ matrix.python-version }}
       run: |
         conda-build --python ${{ matrix.python-version }} rpcompletion
