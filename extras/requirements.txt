@@ -7,4 +7,3 @@ python-libsbml
 requests
 urllib3
 colored
-redis-server

@@ -20,7 +20,7 @@ from requests import exceptions as r_exceptions
 from tarfile import open as tf_open
 from redis import StrictRedis
 from credisdict import CRedisDict, wait_for_redis
-import redis_server
+#import redis_server
 # from subprocess import Popen,PIPE
 from argparse import ArgumentParser as argparse_ArgParser
 from hashlib import sha512
