@@ -12,5 +12,5 @@ idna==2.9                 # via requests
 python-libsbml==5.18.0    # via brs-utils
 requests==2.24.0          # via -r requirements.in
 urllib3==1.25.9           # via requests
-pycolorterm
-redis-server==5.0.7
+colored
+redis-server

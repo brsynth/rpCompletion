@@ -25,7 +25,7 @@ import redis_server
 from argparse import ArgumentParser as argparse_ArgParser
 from hashlib import sha512
 from pathlib import Path
-from pycolorterm.pycolorterm import print_pretty
+from colored import attr as c_attr
 
 
 #######################################################
@@ -289,7 +289,7 @@ class rpCache:
 
         # GENERATE CACHE FILES AND STORE THEM TO DISK
         attribute = 'deprecatedMNXM_mnxm'
-        print_pretty('<BOLD>'+attribute+'<END>')
+        print(c_attr('bold')+attribute+c_attr('reset'))
         deprecatedMNXM_mnxm = None
         f_deprecatedMNXM_mnxm = outdir+attribute+rpCache._ext
         if not os_path.isfile(f_deprecatedMNXM_mnxm):
@@ -304,7 +304,7 @@ class rpCache:
             print_OK()
 
         attribute = 'mnxm_strc'
-        print_pretty('<BOLD>'+attribute+'<END>')
+        print(c_attr('bold')+attribute+c_attr('reset'))
         mnxm_strc = None
         f_mnxm_strc = outdir+attribute+rpCache._ext
         if not os_path.isfile(f_mnxm_strc):
@@ -323,7 +323,7 @@ class rpCache:
             print_OK()
 
         attribute = 'inchikey_mnxm'
-        print_pretty('<BOLD>'+attribute+'<END>')
+        print(c_attr('bold')+attribute+c_attr('reset'))
         inchikey_mnxm = None
         f_inchikey_mnxm = outdir+attribute+rpCache._ext
         if not os_path.isfile(f_inchikey_mnxm):
@@ -343,7 +343,7 @@ class rpCache:
             print_OK()
 
         attribute = 'chemXref'
-        print_pretty('<BOLD>'+attribute+'<END>')
+        print(c_attr('bold')+attribute+c_attr('reset'))
         chemXref = None
         f_chemXref = outdir+attribute+rpCache._ext
         if not os_path.isfile(f_chemXref):
@@ -362,7 +362,7 @@ class rpCache:
             print_OK()
 
         attribute = 'chebi_mnxm'
-        print_pretty('<BOLD>'+attribute+'<END>')
+        print(c_attr('bold')+attribute+c_attr('reset'))
         chebi_mnxm = None
         f_chebi_mnxm = outdir+attribute+rpCache._ext
         if not os_path.isfile(f_chebi_mnxm):
@@ -379,7 +379,7 @@ class rpCache:
             print_OK()
 
         attribute = 'deprecatedMNXR_mnxr'
-        print_pretty('<BOLD>'+attribute+'<END>')
+        print(c_attr('bold')+attribute+c_attr('reset'))
         deprecatedMNXR_mnxr = None
         f_deprecatedMNXR_mnxr = outdir+attribute+rpCache._ext
         if not os_path.isfile(f_deprecatedMNXR_mnxr):
@@ -394,7 +394,7 @@ class rpCache:
             print_OK()
 
         attribute = 'rr_reactions'
-        print_pretty('<BOLD>'+attribute+'<END>')
+        print(c_attr('bold')+attribute+c_attr('reset'))
         rr_reactions = None
         f_rr_reactions = outdir+attribute+rpCache._ext
         if not os_path.isfile(f_rr_reactions):
@@ -419,7 +419,7 @@ class rpCache:
             print_OK()
 
         attribute = 'compXref, name_compXref'
-        print_pretty('<BOLD>'+attribute+'<END>')
+        print(c_attr('bold')+attribute+c_attr('reset'))
         compXref = name_compXref = None
         f_compXref = outdir+'compXref'+rpCache._ext
         f_name_compXref = outdir+'name_compXref'+rpCache._ext
@@ -440,7 +440,7 @@ class rpCache:
             print_OK()
 
         attribute = 'full_reactions'
-        print_pretty('<BOLD>'+attribute+'<END>')
+        print(c_attr('bold')+attribute+c_attr('reset'))
         full_reactions = None
         f_full_reactions = outdir+attribute+rpCache._ext
         if not os_path.isfile(f_full_reactions):
