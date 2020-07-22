@@ -50,8 +50,8 @@ jobs:
         conda skeleton pypi rpcompletion
     - name: Customize recipe
       run: |
-        sed  '/\ \ host\:/a \ \ \ \ - redis' rpcompletion/meta.yaml
-        sed  '/\ \ run\:/a \ \ \ \ - rdkit' rpcompletion/meta.yaml
+        sed -i.bck '/\ \ host\:/a \ \ \ \ - redis' rpcompletion/meta.yaml >
+        sed -i.bck '/\ \ run\:/a \ \ \ \ - rdkit' rpcompletion/meta.yaml
     - name: Add channels
       run: |
         conda config \
