@@ -1,7 +1,8 @@
 ARG IMAGE
 FROM ${IMAGE}
 
-RUN conda install -y -c rdkit rdkit
+RUN conda install -y -c rdkit rdkit \
+ && conda install -y -c anaconda redis
 
 ARG PKG
 COPY tests/pytest/requirements.txt requirements-test.txt

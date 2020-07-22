@@ -24,4 +24,4 @@ docker-compose \
     --env-file pytest/docker/.env \
   run --rm \
   --entrypoint="" \
-  tests sh -c "/opt/conda/lib/python3.7/site-packages/redis_server/bin/redis-server > /dev/null 2>&1 & pytest --verbose $file"
+  tests sh -c "redis-server > /dev/null 2>&1 & pytest --verbose $file"
