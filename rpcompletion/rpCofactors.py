@@ -52,8 +52,8 @@ class rpCofactors(rpCache):
     #
     # @param rpReader input reader object with the parsed user input and cache files required
     #DEPRECATED def __init__(self, rpReader, userXrefDbName=None):
-    def __init__(self, db='file', print_infos=False):
-        super().__init__(db, print_infos)
+    def __init__(self, db='file'):
+        super().__init__(db)
         self.logger = logging.getLogger(__name__)
         self.logger.info('Started instance of rpCofactors')
 
