@@ -89,24 +89,10 @@ class rpCompletion(rpCofactors):
     #######################################################################
 
     def _pubChemLimit(self):
-        '''
-        if self.pubchem_sec_start==0.0:
-            self.pubchem_sec_start = time_time()
-        '''
         if self.pubchem_min_start==0.0:
             self.pubchem_min_start = time_time()
         #self.pubchem_sec_count += 1
         self.pubchem_min_count += 1
-        '''
-        #### requests per second ####
-        if self.pubchem_sec_count>=5 and time.time()-self.pubchem_sec_start<=1.0:
-            time.sleep(1.0)
-            self.pubchem_sec_start = time.time()
-            self.pubchem_sec_count = 0
-        elif time.time()-self.pubchem_sec_start>1.0:
-            self.pubchem_sec_start = time.time()
-            self.pubchem_sec_count = 0
-        '''
         #### requests per minute ####
         if self.pubchem_min_count>=500 and time_time()-self.pubchem_min_start<=60.0:
             logging.warning('Reached 500 requests per minute for pubchem... waiting a minute')
@@ -129,27 +115,52 @@ class rpCompletion(rpCofactors):
     def _pubchemStrctSearch(self, strct, itype='inchi'):
         self._pubChemLimit()
         try:
-            # print()
-            # print("REQUEST")
-            # print()
             r = requests.post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
-        except requests.exceptions.ConnectionError as e:
-            self.logger.warning('Overloading PubChem, waiting 5 seconds and trying again')
-            time_sleep(5)
-            try:
-                r = requests.post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
-            except requests.exceptions.ConnectionError as e:
-                self.logger.warning(e)
-                return {}
-        res_list = r.json()['InformationList']['Information']
+            res_list = r.json()
+        except json.decoder.JSONDecodeError:
+            self.logger.warning('JSON decode error')
+            return {}
+        try:
+            res_list = res_list['InformationList']['Information']
+        except KeyError:
+            self.logger.warning('pubchem JSON keyerror: '+str(res_list))
+            return {}
         xref = {}
         if len(res_list)==1:
-            name_r = requests.get('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(res_list[0]['CID'])+'/property/IUPACName,InChI,InChIKey,CanonicalSMILES/JSON')
-            name_r_list = name_r.json()
-            name = name_r_list['PropertyTable']['Properties'][0]['IUPACName']
-            inchi = name_r_list['PropertyTable']['Properties'][0]['InChI']
-            inchikey = name_r_list['PropertyTable']['Properties'][0]['InChIKey']
-            smiles = name_r_list['PropertyTable']['Properties'][0]['CanonicalSMILES']
+            self._pubChemLimit()
+            try:
+                prop = requests.get('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(res_list[0]['CID'])+'/property/IUPACName,InChI,InChIKey,CanonicalSMILES/JSON')
+                prop_list = prop.json()
+            except json.decoder.JSONDecodeError:
+                self.logger.warning('JSON decode error')
+                return {}
+            try:
+                name = prop_list['PropertyTable']['Properties'][0]['IUPACName']
+                inchi = prop_list['PropertyTable']['Properties'][0]['InChI']
+                inchikey = prop_list['PropertyTable']['Properties'][0]['InChIKey']
+                smiles = prop_list['PropertyTable']['Properties'][0]['CanonicalSMILES']
+            except KeyError:
+                self.logger.warning('pubchem JSON keyerror: '+str(prop_list))
+                return {}
+            #TODO: need to determine how long cobra cannot handle this
+            #TODO: determine if names that are too long is the problem and if not remove this part
+            if len(name)>30:
+                self._pubChemLimit()
+                try:
+                    syn = requests.get('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(res_list[0]['CID'])+'/synonyms/JSON')
+                    syn_lst = syn.json()
+                except json.decoder.JSONDecodeError:
+                    self.logger.warning('pubchem JSON decode error')
+                    return {}
+                try:
+                    syn_lst = syn_lst['InformationList']['Information'][0]['Synonym']
+                    syn_lst = [x for x in syn_lst if not 'CHEBI' in x and not x.isupper()]
+                    name = syn_lst[0] #need a better way instead of just the firs tone
+                except KeyError:
+                    self.logger.warning('pubchem JSON keyerror: '+str(syn.json()))
+                    return {}
+                except IndexError:
+                    name = ''
             xref['pubchem'] = [str(res_list[0]['CID'])]
             for url in res_list[0]['SBURL']:
                 if 'https://biocyc.org/compound?orgid=META&id=' in url:
