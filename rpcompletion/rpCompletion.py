@@ -89,16 +89,16 @@ class rpCompletion(rpCofactors):
 
     def _pubChemLimit(self):
         if self.pubchem_min_start==0.0:
-            self.pubchem_min_start = time.time()
+            self.pubchem_min_start = time_time()
         self.pubchem_min_count += 1
         #### requests per minute ####
-        if self.pubchem_min_count>=500 and time.time()-self.pubchem_min_start<=60.0:
+        if self.pubchem_min_count>=500 and time_time()-self.pubchem_min_start<=60.0:
             self.logger.warning('Reached 500 requests per minute for pubchem... waiting a minute')
             time.sleep(60.0)
-            self.pubchem_min_start = time.time()
+            self.pubchem_min_start = time_time()
             self.pubchem_min_count = 0
-        elif time.time()-self.pubchem_min_start>60.0:
-            self.pubchem_min_start = time.time()
+        elif time_time()-self.pubchem_min_start>60.0:
+            self.pubchem_min_start = time_time()
             self.pubchem_min_count = 0
 
     ## Try to retreive the xref from an inchi structure using pubchem
@@ -953,7 +953,7 @@ class rpCompletion(rpCofactors):
                 #because of the nature of the input we need to remove duplicates
                 for i in data[path_id]['steps'][stepNum]['substrates']+data[path_id]['steps'][stepNum]['products']:
                     if not i in allChem:
-                        allChem.append(i)            
+                        allChem.append(i)
             #add them to the SBML
             for chem in allChem:
                 #PROBLEM: as it stands one expects the meta to be MNX
@@ -972,7 +972,7 @@ class rpCompletion(rpCofactors):
                         self.logger.warning('Cannot determine MNX or CHEBI entry, using random')
                         tmpDB_name = list(chem['dbref'].keys())[0]
                         meta = chem['dbref'][list(chem['dbref'].keys())[0]][0]
-                        meta = str(tmpDB_name)+'_'+str(meta) 
+                        meta = str(tmpDB_name)+'_'+str(meta)
                     #break
                 #try to conver the inchi into the other structures
                 smiles = None
@@ -1041,7 +1041,7 @@ class rpCompletion(rpCofactors):
                             self.logger.warning('Cannot determine MNX or CHEBI entry, using random')
                             tmpDB_name = list(chem['dbref'].keys())[0]
                             meta = chem['dbref'][list(chem['dbref'].keys())[0]][0]
-                            meta = str(tmpDB_name)+'_'+str(meta) 
+                            meta = str(tmpDB_name)+'_'+str(meta)
                     toSend['left'][meta] = 1
                 for chem in data[path_id]['steps'][stepNum]['products']:
                     if 'mnx' in chem['dbref']:
@@ -1057,7 +1057,7 @@ class rpCompletion(rpCofactors):
                             self.logger.warning('Cannot determine MNX or CHEBI entry, using random')
                             tmpDB_name = list(chem['dbref'].keys())[0]
                             meta = chem['dbref'][list(chem['dbref'].keys())[0]][0]
-                            meta = str(tmpDB_name)+'_'+str(meta) 
+                            meta = str(tmpDB_name)+'_'+str(meta)
                     toSend['right'][meta] = 1
                         #break
                 #if all are full add it
@@ -1365,7 +1365,7 @@ class rpCompletion(rpCofactors):
                                     pubchem_inchi = self.pubchem_inchi[spe_inchi]['inchi']
                                     pubchem_inchikey = self.pubchem_inchi[spe_inchi]['inchikey']
                                     pubchem_smiles = self.pubchem_inchi[spe_inchi]['smiles']
-                                    pubchem_xref = self.pubchem_inchi[spe_inchi]['xref'] 
+                                    pubchem_xref = self.pubchem_inchi[spe_inchi]['xref']
                             except KeyError:
                                 pubres = self._pubchemStrctSearch(spe_inchi, 'inchi')
                                 if not chem_name:
@@ -1417,7 +1417,7 @@ class rpCompletion(rpCofactors):
                                 try:
                                     spe_xref = self.cid_xref[self.chebi_cid[pubres['xref']['chebi'][0]]]
                                 except KeyError:
-                                    pass        
+                                    pass
                             if not pubchem_xref:
                                 pubchem_xref = pubres['xref']
                             if not pubchem_inchi:
