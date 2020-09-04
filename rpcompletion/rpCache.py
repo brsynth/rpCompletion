@@ -566,22 +566,22 @@ class rpCache:
     #
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     @staticmethod
-    def _checkCIDdeprecated(mnxm, deprecatedCID_cid):
+    def _checkCIDdeprecated(cid, deprecatedCID_cid):
         try:
-            return deprecatedCID_cid[mnxm]
+            return deprecatedCID_cid[cid]
         except (KeyError, TypeError):
-            return mnxm
+            return cid
 
 
     ## Function to create a dictionnary of old to new reaction id's
     #
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     @staticmethod
-    def _checkRIDdeprecated(mnxr, deprecatedRID_rid):
+    def _checkRIDdeprecated(rid, deprecatedRID_rid):
         try:
-            return deprecatedRID_rid[mnxr]
+            return deprecatedRID_rid[rid]
         except (KeyError, TypeError):
-            return mnxr
+            return rid
 
 
     #################################################################
