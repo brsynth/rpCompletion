@@ -95,7 +95,7 @@ class rpCompletion(rpCofactors):
         #### requests per minute ####
         if self.pubchem_min_count>=500 and time_time()-self.pubchem_min_start<=60.0:
             self.logger.warning('Reached 500 requests per minute for pubchem... waiting a minute')
-            time.sleep(60.0)
+            time_sleep(60.0)
             self.pubchem_min_start = time_time()
             self.pubchem_min_count = 0
         elif time_time()-self.pubchem_min_start>60.0:

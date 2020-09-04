@@ -1,10 +1,8 @@
 import logging
 
-from sys import path as sys_path
 from sys import argv as sys_argv
 from os import path as os_path
 from os import mkdir as os_mkdir
-from glob import glob as glob_glob
 from copy import deepcopy
 from argparse import ArgumentParser as argparse_ArgParser
 
@@ -20,10 +18,12 @@ def _add_arguments(parser):
     parser.add_argument('-compartment_id', type=str, default='MNXC3')
     return parser
 
+
 def build_parser():
     parser = argparse_ArgParser('Add the missing cofactors to the monocomponent reactions to the SBML outputs of rpReader')
     parser = _add_arguments(parser)
     return parser
+
 
 def entrypoint(args=sys_argv[1:]):
     parser = build_parser()
@@ -37,10 +37,10 @@ def entrypoint(args=sys_argv[1:]):
                     params.compartment_id)
 
 
-
 if __name__ == "__main__":
 
     entrypoint(sys_argv[1:])
+
 
 ## Class to add the cofactors to a monocomponent reaction to construct the full reaction
 #
@@ -61,7 +61,6 @@ class rpCofactors(rpCache):
     ######################### PUBLIC FUNCTIONS #####################
     ################################################################
 
-
     ## Given a dictionnary describing a monocomponent reaction, add the cofactors by comparing it with the original reaction
     #
     # @param step Dictionnary describing the reaction
@@ -70,6 +69,7 @@ class rpCofactors(rpCache):
     # @param f_reac Dictionnary describing the full original reaction
     # @param pathway_cmp Dictionnary used to retreive the public ID of the intermediate compounds. Resets for each individual pathway
     #
+
     def completeReac(self, step, rr_reac, full_reac, mono_side, rr_string, pathway_cmp):
         if mono_side:
             ## add the unknown species to pathway_cmp for the next steps

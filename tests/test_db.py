@@ -7,7 +7,8 @@ Created on Jul 15 2020
 from module import Module
 from rpcompletion import rpCompletion
 
+
 class Test_DB(Module):
     __test__ = True
 
-    obj       = rpCompletion('localhost')
+    obj = rpCompletion('localhost')
