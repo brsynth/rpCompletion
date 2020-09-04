@@ -930,7 +930,7 @@ class rpCompletion(rpCofactors):
         #TODO: need to exit at this loop
         for path_id in data:
             try:
-                mnxc = self.xref_comp[compartment_id]
+                mnxc = self.deprecatedCompID_compid[compartment_id]
             except KeyError:
                 self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
                 return False
@@ -1290,7 +1290,7 @@ class rpCompletion(rpCofactors):
         ########### create the SBML's ########
         ######################################
         try:
-            mnxc = self.xref_comp[compartment_id]
+            mnxc = self.deprecatedCompID_compid[compartment_id]
         except KeyError:
             self.logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
             return False
@@ -1597,7 +1597,7 @@ class rpCompletion(rpCofactors):
 		rpreader.rr_reactions = rpcache.rr_reactions
 		rpreader.cid_xref = rpcache.cid_xref
 		rpreader.comp_xref = rpcache.comp_xref
-		rpreader.xref_compID = rpcache.xref_compID
+		rpreader.deprecatedCompID_compidID = rpcache.deprecatedCompID_compidID
 		##################
 		#measured_pathway = parseValidation(tmpOutputFolder+'/tmp_input.csv')
 		measured_sbml_paths = rpreader.validationToSBML(tmpOutputFolder+'/tmp_input.tsv',
