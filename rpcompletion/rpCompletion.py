@@ -430,7 +430,7 @@ class rpCompletion(rpCofactors):
         #compile as much info as you can
 
         #xref
-        try: xref = self.chemXref[meta]
+        try: xref = self.cid_xref[meta]
         except KeyError: xref = {}
         spe = Species(None, None, None, xref)
 
@@ -463,7 +463,7 @@ class rpCompletion(rpCofactors):
                         chemName = pubres['name']
                     if 'chebi' in pubres['xref']:
                         try:
-                            spe.xref = self.chemXref[self.chebi_cid[pubres['xref']['chebi'][0]]]
+                            spe.xref = self.cid_xref[self.chebi_cid[pubres['xref']['chebi'][0]]]
                         except KeyError:
                             pass
                     # pubchem.fill_missing(pubres)
@@ -492,7 +492,7 @@ class rpCompletion(rpCofactors):
                     chemName = pubres['name']
                 if 'chebi' in pubres['xref']:
                     try:
-                        spe.xref = self.chemXref[self.chebi_cid[pubres['xref']['chebi'][0]]]
+                        spe.xref = self.cid_xref[self.chebi_cid[pubres['xref']['chebi'][0]]]
                     except KeyError:
                         pass
                 if not pubchem.xref:
@@ -519,7 +519,7 @@ class rpCompletion(rpCofactors):
                     chemName = pubres['name']
                 if 'chebi' in pubres['xref']:
                     try:
-                        spe.xref = self.chemXref[self.chebi_cid[pubres['xref']['chebi'][0]]]
+                        spe.xref = self.cid_xref[self.chebi_cid[pubres['xref']['chebi'][0]]]
                     except KeyError:
                         pass
                 if not pubchem.xref:
