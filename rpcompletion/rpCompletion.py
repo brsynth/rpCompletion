@@ -884,7 +884,7 @@ class rpCompletion(rpCofactors):
         except FileNotFoundError:
             self.logger.error('Cannot open the file: '+str(inFile))
         #now loop through all of them and remove the invalid paths
-        toRet = copy.deepcopy(data)
+        toRet = deepcopy(data)
         for path_id in data.keys():
             if toRet[path_id]['isValid']==False:
                 del toRet[path_id]
@@ -1279,7 +1279,7 @@ class rpCompletion(rpCofactors):
                     rp_paths[pathNum][reactions_list[pathNum][rid]['step']] = {}
                     sub_step = 1
                     for reac_id in self.rr_reactions[reactions_list[pathNum][rid]['rule_id']]:
-                        tmpReac = copy.deepcopy(reactions_list[pathNum][rid])
+                        tmpReac = deepcopy(reactions_list[pathNum][rid])
                         tmpReac['mnxr'] = reac_id
                         tmpReac['sub_step'] = sub_step
                         rp_paths[pathNum][reactions_list[pathNum][rid]['step']][sub_step] = tmpReac

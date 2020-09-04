@@ -5,7 +5,7 @@ from sys import argv as sys_argv
 from os import path as os_path
 from os import mkdir as os_mkdir
 from glob import glob as glob_glob
-from copy import deepcopy as copy_deepcopy
+from copy import deepcopy
 from argparse import ArgumentParser as argparse_ArgParser
 
 from brs_utils import rpSBML
@@ -205,7 +205,7 @@ class rpCofactors(rpCache):
         spe_conv = {}
         rpsbml_json = rpsbml.genJSON(pathway_id)
         rp_path = rpsbml.outPathsDict(pathway_id)
-        ori_rp_path = copy_deepcopy(rp_path)
+        ori_rp_path = deepcopy(rp_path)
         #We reverse the loop to ID the intermediate CMP to their original ones
         for stepNum in sorted(list(rp_path), reverse=True):
         #for stepNum in sorted(list(rp_path)):
