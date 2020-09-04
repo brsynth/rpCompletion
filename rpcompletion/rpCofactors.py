@@ -135,7 +135,7 @@ class rpCofactors(rpCache):
             try:
                 isSuccess, reac_smiles_left = self.completeReac(step['right'],
                         self.rr_reactions[step['rule_id']][step['rule_ori_reac']]['left'],
-                        self.full_reactions[self._checkRIDdeprecated(step['rule_ori_reac'], self.deprecatedRID_rid)]['right'],
+                        self.rr_full_reactions[self._checkRIDdeprecated(step['rule_ori_reac'], self.deprecatedRID_rid)]['right'],
                         True,
                         reac_smiles_left,
                         pathway_cmp)
@@ -148,7 +148,7 @@ class rpCofactors(rpCache):
             try:
                 isSuccess, reac_smiles_right = self.completeReac(step['left'],
                         self.rr_reactions[step['rule_id']][step['rule_ori_reac']]['right'],
-                        self.full_reactions[self._checkRIDdeprecated(step['rule_ori_reac'], self.deprecatedRID_rid)]['left'],
+                        self.rr_full_reactions[self._checkRIDdeprecated(step['rule_ori_reac'], self.deprecatedRID_rid)]['left'],
                         False,
                         reac_smiles_right,
                         pathway_cmp)
@@ -162,7 +162,7 @@ class rpCofactors(rpCache):
             try:
                 isSuccess, reac_smiles_left = self.completeReac(step['right'],
                         self.rr_reactions[step['rule_id']][step['rule_ori_reac']]['left'],
-                        self.full_reactions[self._checkRIDdeprecated(step['rule_ori_reac'], self.deprecatedRID_rid)]['left'],
+                        self.rr_full_reactions[self._checkRIDdeprecated(step['rule_ori_reac'], self.deprecatedRID_rid)]['left'],
                         True,
                         reac_smiles_left,
                         pathway_cmp)
@@ -175,7 +175,7 @@ class rpCofactors(rpCache):
             try:
                 isSuccess, reac_smiles_right = self.completeReac(step['left'],
                         self.rr_reactions[step['rule_id']][step['rule_ori_reac']]['right'],
-                        self.full_reactions[self._checkRIDdeprecated(step['rule_ori_reac'], self.deprecatedRID_rid)]['right'],
+                        self.rr_full_reactions[self._checkRIDdeprecated(step['rule_ori_reac'], self.deprecatedRID_rid)]['right'],
                         False,
                         reac_smiles_right,
                         pathway_cmp)
@@ -214,7 +214,7 @@ class rpCofactors(rpCache):
                 reactants = set(set(rp_path[stepNum]['left'].keys())-set(ori_rp_path[stepNum]['left'].keys()))
                 products = set(set(rp_path[stepNum]['right'].keys())-set(ori_rp_path[stepNum]['right'].keys()))
                 for species in reactants|products:
-                    tmp_species = self._checkCIDdeprecated(species)
+                    tmp_species = self._checkCIDdeprecated(species, self.deprecatedCID_cid)
                     #check to make sure that they do not yet exist and if not create a new one
                     #TODO, replace the species with an existing one if it is contained in the MIRIAM annotations
                     if not rpsbml.speciesExists(tmp_species, compartment_id):
@@ -265,13 +265,13 @@ class rpCofactors(rpCache):
                                         tmp_cids = [i for i in self.inchikey_cid[inchikey] if i[:3]=='MNX']
                                         #TODO: handle multiple matches. For now we assume that multiple MNX means that there are deprecated versions of the tool
                                         if tmp_cids:
-                                            xref = self.cid_xref[self._checkCIDdeprecated(tmp_cids[0])]
+                                            xref = self.cid_xref[self._checkCIDdeprecated(tmp_cids[0], self.deprecatedCID_cid)]
                                 except KeyError:
                                     self.logger.warning('Cannot find the xref for this species: '+str(species))
                                     xref = {}
                         #### Common Name ####
                         try:
-                            chem_name = self.cid_name[self._checkCIDdeprecated(tmp_species)]
+                            chem_name = self.cid_name[self._checkCIDdeprecated(tmp_species, self.deprecatedCID_cid)]
                         except KeyError:
                             #if you cannot find using cid, try to retreive it using its inchikey
                             try:
@@ -279,7 +279,7 @@ class rpCofactors(rpCache):
                                     #@Joan: Same question as above
                                     tmp_cids = [i for i in self.inchikey_cid[inchikey] if i[:3]=='MNX']
                                     if tmp_cids:
-                                        chem_name = self.cid_name[self._checkCIDdeprecated(tmp_cids[0])]
+                                        chem_name = self.cid_name[self._checkCIDdeprecated(tmp_cids[0], self.deprecatedCID_cid)]
                             except KeyError:
                                 self.logger.warning('Cannot find the name for this species: '+str(species))
                         #### Finally create the species in the SBML file ######
@@ -295,10 +295,10 @@ class rpCofactors(rpCache):
                 pre_reactants = [i.species for i in reac.getListOfReactants()]
                 pre_products = [i.species for i in reac.getListOfProducts()]
                 for pro in products:
-                    if self._checkCIDdeprecated(pro) in spe_conv:
-                        toadd = spe_conv[self._checkCIDdeprecated(pro)]
+                    if self._checkCIDdeprecated(pro, self.deprecatedCID_cid) in spe_conv:
+                        toadd = spe_conv[self._checkCIDdeprecated(pro, self.deprecatedCID_cid)]
                     else:
-                        toadd = str(self._checkCIDdeprecated(pro))+'__64__'+str(compartment_id)
+                        toadd = str(self._checkCIDdeprecated(pro, self.deprecatedCID_cid))+'__64__'+str(compartment_id)
                     #prod.setSpecies(str(self._checkCIDdeprecated(pro))+'__64__'+str(compartment_id))
                     if toadd in pre_products:
                         continue
@@ -307,10 +307,10 @@ class rpCofactors(rpCache):
                     prod.setConstant(True)
                     prod.setStoichiometry(rp_path[stepNum]['right'][pro])
                 for sub in reactants:
-                    if self._checkCIDdeprecated(sub) in spe_conv:
-                        toadd = spe_conv[self._checkCIDdeprecated(sub)]
+                    if self._checkCIDdeprecated(sub, self.deprecatedCID_cid) in spe_conv:
+                        toadd = spe_conv[self._checkCIDdeprecated(sub, self.deprecatedCID_cid)]
                     else:
-                        toadd = str(self._checkCIDdeprecated(sub))+'__64__'+str(compartment_id)
+                        toadd = str(self._checkCIDdeprecated(sub, self.deprecatedCID_cid))+'__64__'+str(compartment_id)
                     #prod.setSpecies(str(self._checkCIDdeprecated(sub))+'__64__'+str(compartment_id))
                     if toadd in pre_reactants:
                         continue
