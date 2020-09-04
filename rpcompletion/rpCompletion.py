@@ -13,6 +13,7 @@ from .rpCofactors import rpCofactors, add_arguments
 from brs_utils import rpSBML
 from io import StringIO
 from copy import deepcopy
+from json import decoder as json_decoder
 
 #import rpCofactors
 
@@ -113,7 +114,7 @@ class rpCompletion(rpCofactors):
         try:
             r = requests.post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
             res_list = r.json()
-        except json.decoder.JSONDecodeError:
+        except json_decoder.JSONDecodeError:
             self.logger.warning('JSON decode error')
             return {}
         try:
@@ -127,7 +128,7 @@ class rpCompletion(rpCofactors):
             try:
                 prop = requests.get('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(res_list[0]['CID'])+'/property/IUPACName,InChI,InChIKey,CanonicalSMILES/JSON')
                 prop_list = prop.json()
-            except json.decoder.JSONDecodeError:
+            except json_decoder.JSONDecodeError:
                 self.logger.warning('JSON decode error')
                 return {}
             try:
@@ -145,7 +146,7 @@ class rpCompletion(rpCofactors):
                 try:
                     syn = requests.get('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(res_list[0]['CID'])+'/synonyms/JSON')
                     syn_lst = syn.json()
-                except json.decoder.JSONDecodeError:
+                except json_decoder.JSONDecodeError:
                     self.logger.warning('pubchem JSON decode error')
                     return {}
                 try:
