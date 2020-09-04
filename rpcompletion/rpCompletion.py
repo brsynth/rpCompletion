@@ -260,7 +260,7 @@ class rpCompletion(rpCofactors):
             for row in reader:
                 rp_strc[row[0]] = {'smiles': row[1]}  #, 'structure':row[1].replace('[','').replace(']','')
                 try:
-                    rp_strc[row[0]]['inchi'] = self.mnxm_strc[row[0]]['inchi']
+                    rp_strc[row[0]]['inchi'] = self.cid_strc[row[0]]['inchi']
                 except KeyError:
                     #try to generate them yourself by converting them directly
                     try:
@@ -269,7 +269,7 @@ class rpCompletion(rpCofactors):
                     except NotImplementedError as e:
                         self.logger.warning('Could not convert the following SMILES to InChI: '+str(row[1]))
                 try:
-                    rp_strc[row[0]]['inchikey'] = self.mnxm_strc[row[0]]['inchikey']
+                    rp_strc[row[0]]['inchikey'] = self.cid_strc[row[0]]['inchikey']
                     #try to generate them yourself by converting them directly
                     #TODO: consider using the inchi writing instead of the SMILES notation to find the inchikey
                 except KeyError:
@@ -386,12 +386,12 @@ class rpCompletion(rpCofactors):
                     tmp_l = l.split('.')
                     try:
                         #tmpReac['left'].append({'stoichio': int(tmp_l[0]), 'name': tmp_l[1]})
-                        mnxm = '' #TODO: change this
+                        cid = '' #TODO: change this
                         if tmp_l[1] in self.deprecatedCID_cid:
-                            mnxm = self.deprecatedCID_cid[tmp_l[1]]
+                            cid = self.deprecatedCID_cid[tmp_l[1]]
                         else:
-                            mnxm = tmp_l[1]
-                        tmpReac['left'][mnxm] = int(tmp_l[0])
+                            cid = tmp_l[1]
+                        tmpReac['left'][cid] = int(tmp_l[0])
                     except ValueError:
                         self.logger.error('Cannot convert tmp_l[0] to int ('+str(tmp_l[0])+')')
                         #return {}
@@ -401,12 +401,12 @@ class rpCompletion(rpCofactors):
                     tmp_r = r.split('.')
                     try:
                         #tmpReac['right'].append({'stoichio': int(tmp_r[0]), 'name': tmp_r[1]})
-                        mnxm = '' #TODO change this
+                        cid = '' #TODO change this
                         if tmp_r[1] in self.deprecatedCID_cid:
-                            mnxm = self.deprecatedCID_cid[tmp_r[1]]  #+':'+self.rr_reactions[tmpReac['rule_id']]['left']
+                            cid = self.deprecatedCID_cid[tmp_r[1]]  #+':'+self.rr_reactions[tmpReac['rule_id']]['left']
                         else:
-                            mnxm = tmp_r[1]  #+':'+self.rr_reactions[tmpReac['rule_id']]['left']
-                        tmpReac['right'][mnxm] = int(tmp_r[0])
+                            cid = tmp_r[1]  #+':'+self.rr_reactions[tmpReac['rule_id']]['left']
+                        tmpReac['right'][cid] = int(tmp_r[0])
                     except ValueError:
                         self.logger.error('Cannot convert tmp_r[0] to int ('+str(tmp_r[0])+')')
                         return {}
@@ -423,7 +423,7 @@ class rpCompletion(rpCofactors):
     def _unique_species(self, meta, rp_strc, pubchem_search):
 
         try:
-            chemName = self.mnxm_strc[meta]['name']
+            chemName = self.cid_strc[meta]['name']
         except KeyError:
             chemName = None
 
