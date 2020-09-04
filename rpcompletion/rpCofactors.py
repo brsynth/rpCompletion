@@ -202,6 +202,7 @@ class rpCofactors(rpCache):
     def addCofactors(self, rpsbml, compartment_id='MNXC3', pathway_id='rp_pathway'):
         #This keeps the IDs conversions to the pathway
         pathway_cmp = {}
+        spe_conv = {}
         rpsbml_json = rpsbml.genJSON(pathway_id)
         rp_path = rpsbml.outPathsDict(pathway_id)
         ori_rp_path = copy_deepcopy(rp_path)
