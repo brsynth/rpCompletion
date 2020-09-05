@@ -1,31 +1,24 @@
-from os import path as os_path
-from os import mkdir as os_mkdir
-from os import remove as os_rm
-from rdkit.Chem import MolFromSmiles, MolFromInchi, MolToSmiles, MolToInchi, MolToInchiKey, AddHs
-from csv import DictReader as csv_DictReader
-from csv import reader as csv_reader
-from logging import getLogger as logging_getLogger
-from json import dump as json_dump
-from json import load as json_load
-from gzip import open as gzip_open
-from re import findall as re_findall
-from tarfile import open as tarfile_open
-from shutil import move as shutil_move
-from shutil import rmtree as shutil_rmtree
-import sys
-import time
-from itertools import chain as itertools_chain
-from brs_utils import print_OK, print_FAILED, download, file_length
-from requests import exceptions as r_exceptions
-from tarfile import open as tf_open
-from redis import StrictRedis
+from os         import path as os_path
+from os         import mkdir as os_mkdir
+from rdkit.Chem import MolFromSmiles, MolFromInchi, MolToSmiles, MolToInchi, MolToInchiKey
+from csv        import DictReader as csv_DictReader
+from csv        import reader as csv_reader
+from logging    import getLogger as logging_getLogger
+from json       import dump as json_dump
+from json       import load as json_load
+from gzip       import open as gzip_open
+from re         import findall as re_findall
+from time       import time as time_time
+from brs_utils  import print_OK, print_FAILED, download
+from requests   import exceptions as r_exceptions
+from redis      import StrictRedis
 from credisdict import CRedisDict, wait_for_redis
 #import redis_server
 # from subprocess import Popen,PIPE
-from argparse import ArgumentParser as argparse_ArgParser
-from hashlib import sha512
-from pathlib import Path
-from colored import attr as c_attr
+from argparse   import ArgumentParser as argparse_ArgParser
+from hashlib    import sha512
+from pathlib    import Path
+from colored    import attr as c_attr
 
 
 #######################################################
@@ -229,12 +222,12 @@ class rpCache:
             else:
                 filename = attr+rpCache._ext
                 print("Downloading "+filename+"...", end = '', flush=True)
-                start_time = time.time()
+                start_time = time_time()
                 if not os_path.isdir(cache_dir):
                     os_mkdir(cache_dir)
                 download(rpCache._cache_url+filename, cache_dir+filename)
                 rpCache._cache_files[attr] = True
-                end_time = time.time()
+                end_time = time_time()
                 print_OK(end_time-start_time)
 
 
@@ -464,9 +457,9 @@ class rpCache:
         filename = outdir+file
         if not os_path.isfile(filename):
             print("Downloading "+file+"...", end = '', flush=True)
-            start_time = time.time()
+            start_time = time_time()
             rpCache.__download_input_cache(url, file, outdir)
-            end_time = time.time()
+            end_time = time_time()
             print_OK(end_time-start_time)
         else:
             print(filename+" already downloaded ", end = '', flush=True)
