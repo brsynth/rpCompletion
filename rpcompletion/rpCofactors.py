@@ -86,7 +86,7 @@ class rpCofactors(rpCache):
         rr_string += self.add_side_species(step, full_reac, rr_reac)
 
         ## Update the stochio
-        return True, self.update_stochio(step, full_reac, rr_string)
+        return True, self.update_stochio(step, full_reac, rr_string, pathway_cmp)
 
 
     def add_side_species(self, step, full_reac, rr_reac):
@@ -104,7 +104,7 @@ class rpCofactors(rpCache):
         return rr_string
 
 
-    def update_stochio(self, step, full_reac, rr_string):
+    def update_stochio(self, step, full_reac, rr_string, pathway_cmp):
         for step_spe in step:
             if step_spe in full_reac:
                 if not step[step_spe]==full_reac[step_spe]:
@@ -120,7 +120,8 @@ class rpCofactors(rpCache):
                             if not smi==None:
                                 rr_string += '.'+str(smi)
                         except KeyError:
-                            self.logger.warning('Cannot find smiles structure for '+str(toAdd))
+                            #@Mel toAdd -> step_spe
+                            self.logger.warning('Cannot find smiles structure for '+str(step_spe))
             elif step_spe in pathway_cmp:
                 if pathway_cmp[step_spe] in full_reac:
                     if not step[step_spe]==full_reac[pathway_cmp[step_spe]]:
