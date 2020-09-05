@@ -651,6 +651,7 @@ class rpCache:
     @staticmethod
     def _m_mnxm_strc(rr_compounds_path, chem_prop_path, deprecatedCID_cid):
         cid_strc = {}
+        cid_name = {}
         for row in csv_DictReader(gzip_open(rr_compounds_path, 'rt'), delimiter='\t'):
             tmp = {'formula':  None,
                     'smiles': None,
