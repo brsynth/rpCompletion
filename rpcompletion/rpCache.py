@@ -681,7 +681,7 @@ class rpCache:
                     for i in tmp:
                         if tmp[i]=='' or tmp[i]=='NA':
                             tmp[i] = None
-                    if not mnxm in self.cid_name and tmp['name']:
+                    if not mnxm in cid_name and tmp['name']:
                         cid_name[mnxm] = tmp['name']
                     if mnxm in cid_strc:
                         cid_strc[mnxm]['formula'] = row[2]
