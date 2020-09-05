@@ -1,3 +1,6 @@
+1.0.6 - Sep 5, 2020
+    - merge improvements from older versions
+
 1.0.5 - Jul 22, 2020
     - rm redis dependecy for the module (had to be done for v1.0.2)
 
