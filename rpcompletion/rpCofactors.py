@@ -83,13 +83,13 @@ class rpCofactors(rpCache):
                 return False
 
         ## add the side species
-        rr_string += self.add_side_species()
+        rr_string += self.add_side_species(step, full_reac, rr_reac)
 
         ## Update the stochio
         return True, self.update_stochio(step, full_reac, rr_string)
 
 
-    def add_side_species(self, full_reac, rr_reac)
+    def add_side_species(self, step, full_reac, rr_reac):
         rr_string = ''
         for toAdd in full_reac.keys()-rr_reac.keys():
             step.update({toAdd: full_reac[toAdd]})
@@ -104,7 +104,7 @@ class rpCofactors(rpCache):
         return rr_string
 
 
-    def update_stochio(self, step, full_reac, rr_string)
+    def update_stochio(self, step, full_reac, rr_string):
         for step_spe in step:
             if step_spe in full_reac:
                 if not step[step_spe]==full_reac[step_spe]:
