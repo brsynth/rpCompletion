@@ -69,8 +69,8 @@ class rpCofactors(rpCache):
     # @param f_reac Dictionnary describing the full original reaction
     # @param pathway_cmp Dictionnary used to retreive the public ID of the intermediate compounds. Resets for each individual pathway
     #
-
     def completeReac(self, step, rr_reac, full_reac, mono_side, rr_string, pathway_cmp):
+
         if mono_side:
             ## add the unknown species to pathway_cmp for the next steps
             rr_mono_cmp = list(rr_reac.keys())
@@ -81,7 +81,16 @@ class rpCofactors(rpCache):
             else:
                 self.logger.warning('There should be only one compound on the left for monocomponent reaction: rr_mono_cmp: '+str(rr_mono_cmp)+' step_mono_cmp: '+str(step_mono_cmp))
                 return False
+
         ## add the side species
+        rr_string += self.add_side_species()
+
+        ## Update the stochio
+        return True, self.update_stochio(step, full_reac, rr_string)
+
+
+    def add_side_species(self, full_reac, rr_reac)
+        rr_string = ''
         for toAdd in full_reac.keys()-rr_reac.keys():
             step.update({toAdd: full_reac[toAdd]})
             ### update the reaction rule string
@@ -92,7 +101,10 @@ class rpCofactors(rpCache):
                         rr_string += '.'+str(smi)
             except KeyError:
                 self.logger.warning('Cannot find smiles structure for '+str(toAdd))
-        ## Update the the stochio
+        return rr_string
+
+
+    def update_stochio(self, step, full_reac, rr_string)
         for step_spe in step:
             if step_spe in full_reac:
                 if not step[step_spe]==full_reac[step_spe]:
@@ -120,7 +132,7 @@ class rpCofactors(rpCache):
             #else:
             #    self.logger.warning('Cannot find '+str(step_spe)+' in pathway_cmp')
             #    return False
-        return True, rr_string
+            return rr_string
 
 
     ## Add the cofactors to monocomponent reactions
