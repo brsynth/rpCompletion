@@ -3,7 +3,6 @@ credisdict
 certifi
 chardet
 idna
-python-libsbml
 requests
 urllib3
 colored
