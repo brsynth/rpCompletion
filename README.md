@@ -33,8 +33,11 @@ In order to save memory space, cache data can be loaded once in a database (redi
 
 
 ## Install
+rpCompletion requires [RDKit](https://www.RDKit.org) which is not available through pip. It can be installed through Conda:
+```sh
+[sudo] conda install -c rdkit rdkit
+```
 ### From pip
-rpCompletion requires [RDKit](https://www.RDKit.org) which is not available through pip.
 ```sh
 [sudo] python -m pip install rpcompletion
 ```
