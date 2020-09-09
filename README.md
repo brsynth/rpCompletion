@@ -80,7 +80,7 @@ rpCache.generate_cache(outdir)
 **From CLI**
 After having installed rpCompletion Python module:
 ```sh
-python -m rpCompletion --gen_cache
+python -m rpcompletion --gen_cache
 ```
 
 

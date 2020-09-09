@@ -7,11 +7,11 @@ from copy import deepcopy
 from argparse import ArgumentParser as argparse_ArgParser
 
 from brs_utils import rpSBML
-from .rpCache import rpCache, add_arguments
+from brs_libs import rpCache, rpCache_add_args
 
 
 def _add_arguments(parser):
-    parser = add_arguments(parser)
+    parser = rpCache_add_args(parser)
     parser.add_argument('-input_file', type=str)
     parser.add_argument('-output_dir', type=str, default='')
     parser.add_argument('-pathway_id', type=str, default='rp_pathway')
