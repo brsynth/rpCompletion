@@ -6,11 +6,10 @@ from os import mkdir as os_mkdir
 from copy import deepcopy
 from argparse import ArgumentParser as argparse_ArgParser
 
-from brs_utils import rpSBML
-from brs_libs import rpCache, rpCache_add_args
+from brs_libs import rpSBML, rpCache, rpCache_add_args
 
 
-def _add_arguments(parser):
+def add_arguments(parser):
     parser = rpCache_add_args(parser)
     parser.add_argument('-input_file', type=str)
     parser.add_argument('-output_dir', type=str, default='')
