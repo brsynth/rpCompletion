@@ -639,25 +639,7 @@ def Write_rp2pathsToSBML(cache,
                 if chemName:
                     chemName = chemName.replace("'", "")
                 # pass the information to create the species
-                if meta in sink_molecules:
-                    rpsbml.createSpecies(meta,
-                                         compartment_id,
-                                         chemName,
-                                         spe.xref,
-                                         spe.inchi,
-                                         spe.inchikey,
-                                         spe.smiles,
-                                         species_group_id,
-                                         sink_species_group_id)
-                else:
-                    rpsbml.createSpecies(meta,
-                                         compartment_id,
-                                         chemName,
-                                         spe.xref,
-                                         spe.inchi,
-                                         spe.inchikey,
-                                         spe.smiles,
-                                         species_group_id)
+                rpsbml = add_species(rpsbml, meta, sink_molecules, compartment_id, chemName, spe, species_group_id, sink_species_group_id)
 
             # 4) Add the complete reactions and their annotations
             for step in steps:
@@ -680,7 +662,8 @@ def Write_rp2pathsToSBML(cache,
                     'path_id': None,
                     'transformation_id': None,
                     'rule_score': None,
-                    'rule_ori_reac': None}
+                    'rule_ori_reac': None
+                    }
             rpsbml.createReaction('RP1_sink',
                                   upper_flux_bound, lower_flux_bound,
                                   targetStep,
@@ -700,21 +683,34 @@ def Write_rp2pathsToSBML(cache,
 
             altPathNum += 1
 
-        # for i in range(len(local_sbml_paths)):
-        #     for j in range(i+1, len(local_sbml_paths)):
-        #         if local_sbml_paths[i].rpsbml_obj == local_sbml_paths[j].rpsbml_obj:
-        #             print("NOT UNIQUE !!!")
-        #             exit()
-
         # Write results to files
         for rpsbml_item in local_rpsbml_items:
             rpsbml_item.rpsbml_obj.writeSBML(outFolder)
 
-        # for item in local_rpsbml_paths:
-        #     sbml_paths[item.index] = item.rpsbml_obj
-        # sbml_paths += local_sbml_paths
-
     return True
+
+def add_species(rpsbml, meta, sink_molecules, compartment_id, chemName, spe, species_group_id, sink_species_group_id):
+    if meta in sink_molecules:
+        rpsbml.createSpecies(meta,
+                             compartment_id,
+                             chemName,
+                             spe.xref,
+                             spe.inchi,
+                             spe.inchikey,
+                             spe.smiles,
+                             species_group_id,
+                             sink_species_group_id)
+    else:
+        rpsbml.createSpecies(meta,
+                             compartment_id,
+                             chemName,
+                             spe.xref,
+                             spe.inchi,
+                             spe.inchikey,
+                             spe.smiles,
+                             species_group_id)
+
+    return rpsbml
 
 def insert_sbml_item(sbml_item, rpsbml_items):
     unique = True
