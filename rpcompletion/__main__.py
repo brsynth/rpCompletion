@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-from logging import error as logging_error
-
-from rpCache      import rpCache
+from logging      import error as logging_error
+from brs_libs     import rpCache
 from rpcompletion import rp2ToSBML, build_args_parser
 
 
