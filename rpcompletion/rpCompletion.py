@@ -58,7 +58,11 @@ class SBML_Item:
         self.rpsbml_obj = rpsbml_obj
 
     def __eq__(self, sbml_item):
-        return self.rpsbml_obj == sbml_item.rpsbml_obj
+        return self.score == sbml_item.score
+    def __lt__(self, sbml_item):
+        return self.score < sbml_item.score
+    def __gt__(self, sbml_item):
+        return self.score > sbml_item.score
 
 
 # ## Class to read all the input files
@@ -720,10 +724,10 @@ def add_species(rpsbml, meta, sink_molecules, compartment_id, chemName, spe, spe
 #  @max_subpaths_filter maximal numer of subpaths per paths
 #  @outFolder folder where to write files
 #  @return Boolean The success or failure of the function
-def insert_and_or_replace_item(item, list):
+def insert_and_or_replace_sbml_item(item, list):
 
     # If current item has a higher score than the worst in the list, then it has to be inserted
-    if item > list[-1]:
+    if item.score > list[-1].score:
         # Remove the same pathway with worse score from the list
         try:
             list.pop(list.index(item))
