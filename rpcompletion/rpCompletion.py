@@ -1,19 +1,19 @@
-import csv
-import logging
-import requests
-
-from itertools import product as itertools_product
-from time import time as time_time
-from time import sleep as time_sleep
-from bisect import insort as bisect_insort
-from argparse import ArgumentParser as argparse_ArgumentParser
-from os import path as os_path
-from os import mkdir as os_mkdir
+from csv       import reader         as csv_reader
+from csv       import DictReader     as csv_DictReader
+from requests  import post           as r_post
+from requests  import get            as r_get
+from itertools import product        as itertools_product
+from time      import time           as time_time
+from time      import sleep          as time_sleep
+from bisect    import insort         as bisect_insort
+from argparse  import ArgumentParser as argparse_ArgumentParser
+from os        import path           as os_path
+from os        import mkdir          as os_mkdir
+from json      import decoder        as json_decoder
+from io        import StringIO
+from copy      import deepcopy
 from .rpCofactors import rpCofactors, add_arguments
-from brs_utils import rpSBML
-from io import StringIO
-from copy import deepcopy
-from json import decoder as json_decoder
+from brs_libs     import rpSBML
 
 #import rpCofactors
 
@@ -112,7 +112,7 @@ class rpCompletion(rpCofactors):
     def _pubchemStrctSearch(self, strct, itype='inchi'):
         self._pubChemLimit()
         try:
-            r = requests.post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
+            r = r_post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
             res_list = r.json()
         except json_decoder.JSONDecodeError:
             self.logger.warning('JSON decode error')
@@ -126,7 +126,7 @@ class rpCompletion(rpCofactors):
         if len(res_list)==1:
             self._pubChemLimit()
             try:
-                prop = requests.get('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(res_list[0]['CID'])+'/property/IUPACName,InChI,InChIKey,CanonicalSMILES/JSON')
+                prop = r_get('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(res_list[0]['CID'])+'/property/IUPACName,InChI,InChIKey,CanonicalSMILES/JSON')
                 prop_list = prop.json()
             except json_decoder.JSONDecodeError:
                 self.logger.warning('JSON decode error')
@@ -144,7 +144,7 @@ class rpCompletion(rpCofactors):
             if len(name)>30:
                 self._pubChemLimit()
                 try:
-                    syn = requests.get('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(res_list[0]['CID'])+'/synonyms/JSON')
+                    syn = r_get('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(res_list[0]['CID'])+'/synonyms/JSON')
                     syn_lst = syn.json()
                 except json_decoder.JSONDecodeError:
                     self.logger.warning('pubchem JSON decode error')
@@ -254,9 +254,9 @@ class rpCompletion(rpCofactors):
         rp_strc = {}
         try:
             if isinstance(path, bytes):
-                reader = csv.reader(StringIO(path.decode('utf-8')), delimiter='\t')
+                reader = csv_reader(StringIO(path.decode('utf-8')), delimiter='\t')
             else:
-                reader = csv.reader(open(path, 'r', encoding='utf-8'), delimiter='\t')
+                reader = csv_reader(open(path, 'r', encoding='utf-8'), delimiter='\t')
             next(reader)
             for row in reader:
                 rp_strc[row[0]] = {'smiles': row[1]}  #, 'structure':row[1].replace('[','').replace(']','')
@@ -298,10 +298,10 @@ class rpCompletion(rpCofactors):
         #### we might pass binary in the REST version
         reader = None
         if isinstance(path, bytes):
-            reader = csv.reader(StringIO(path.decode('utf-8')), delimiter=',')
+            reader = csv_reader(StringIO(path.decode('utf-8')), delimiter=',')
         else:
             try:
-                reader = csv.reader(open(path, 'r'), delimiter=',')
+                reader = csv_reader(open(path, 'r'), delimiter=',')
             except FileNotFoundError:
                 self.logger.error('Could not read the compounds file: '+str(path))
                 return {}
@@ -328,9 +328,9 @@ class rpCompletion(rpCofactors):
 
         #### we might pass binary in the REST version
         if isinstance(rp2paths_pathways, bytes):
-            reader = csv.reader(StringIO(rp2paths_pathways.decode('utf-8')))
+            reader = csv_reader(StringIO(rp2paths_pathways.decode('utf-8')))
         else:
-            reader = csv.reader(open(rp2paths_pathways, 'r'))
+            reader = csv_reader(open(rp2paths_pathways, 'r'))
         next(reader)
         current_path_id = 0
         path_step = 1
@@ -578,7 +578,7 @@ class rpCompletion(rpCofactors):
                              species_group_id='central_species',
                              sink_species_group_id='rp_sink_species',
                              pubchem_search=False):
-        #TODO: make sure that you account for the fact that each reaction may have multiple associated reactions
+        # TODO: make sure that you account for the fact that each reaction may have multiple associated reactions
 
         rp_paths = self._read_paths(rp2paths_pathways)
         sink_species = []
@@ -601,8 +601,8 @@ class rpCompletion(rpCofactors):
 
         for pathNum in rp_paths:
 
-            #first level is the list of lists of sub_steps
-            #second is itertools all possible combinations using product
+            # first level is the list of lists of sub_steps
+            # second is itertools all possible combinations using product
             altPathNum = 1
             # topX subpaths of the current rp2path pathway
             local_rpsbml_items = []
@@ -614,9 +614,9 @@ class rpCompletion(rpCofactors):
                 path_id = steps[0]['path_id']
                 rpsbml = rpSBML('rp_'+str(path_id)+'_'+str(altPathNum))
 
-                #1) Create a generic Model, ie the structure and unit definitions that we will use the most
+                # 1) Create a generic Model, ie the structure and unit definitions that we will use the most
                 ##### TODO: give the user more control over a generic model creation:
-                #   -> special attention to the compartment
+                # -> special attention to the compartment
                 rpsbml.genericModel(
                         'RetroPath_Pathway_'+str(path_id)+'_'+str(altPathNum),
                         'RP_model_'+str(path_id)+'_'+str(altPathNum),
@@ -625,21 +625,19 @@ class rpCompletion(rpCofactors):
                         upper_flux_bound,
                         lower_flux_bound)
 
-                #2) Create the pathway (groups)
+                # 2) Create the pathway (groups)
                 rpsbml.createPathway(pathway_id)
                 rpsbml.createPathway(species_group_id)
                 rpsbml.createPathway(sink_species_group_id)
 
-                #3) Find all unique species and add them to the model
+                # 3) Find all unique species and add them to the model
                 all_meta = set([i for step in steps for lr in ['left', 'right'] for i in step[lr]])
                 for meta in all_meta:
                     (chemName, spe) = self._unique_species(meta, rp_strc, pubchem_search)
                     if chemName:
                         chemName = chemName.replace("'", "")
-                    # self.logger.info('Creating species: '+str(chemName)+' ('+str(meta)+')')
-                    #pass the information to create the species
+                    # pass the information to create the species
                     if meta in sink_molecules:
-                        # self.logger.info('Species is sink: '+str(sink_species_group_id))
                         rpsbml.createSpecies(meta,
                                              compartment_id,
                                              chemName,
@@ -659,9 +657,9 @@ class rpCompletion(rpCofactors):
                                              spe.smiles,
                                              species_group_id)
 
-                #4) Add the complete reactions and their annotations
+                # 4) Add the complete reactions and their annotations
                 for step in steps:
-                    #add the substep to the model
+                    # add the substep to the model
                     step['sub_step'] = altPathNum
                     rpsbml.createReaction(
                             'RP'+str(step['step']), # parameter 'name' of the reaction deleted : 'RetroPath_Reaction_'+str(step['step']),
@@ -670,7 +668,7 @@ class rpCompletion(rpCofactors):
                             {'ec': rp_transformation[step['transformation_id']]['ec']},
                             pathway_id)
 
-                #5) Adding the consumption of the target
+                # 5) Adding the consumption of the target
                 targetStep = {
                         'rule_id': None,
                         'left': {[i for i in all_meta if i[:6]=='TARGET'][0]: 1},
@@ -686,44 +684,18 @@ class rpCompletion(rpCofactors):
                                       targetStep,
                                       compartment_id)
 
-                #6) Adding the cofactors
+                # 6) Adding the cofactors
                 self.addCofactors(rpsbml)
 
-                #7) Filtering
+                # 7) Insert the new rpsbml object in sorted rpsbml_items list
                 sbml_item = SBML_Item(rpsbml.getScore(),
                                       'rp_'+str(path_id)+'_'+str(altPathNum),
                                       rpsbml)
-                unique = True
+                local_rpsbml_items = rpCompletion.insert_sbml_item(sbml_item,
+                                                                   local_rpsbml_items)
 
-                # For each subpath already in local_sbml_paths
-                for item in local_rpsbml_items:
-                    # Compare with the new built pathway
-                    if sbml_item.rpsbml_obj==item.rpsbml_obj:
-                        unique = False
-                        # print(rpsbml.outPathsDict())
-                        # If its score is better, then replace the one already in place
-                        if sbml_item.score > item.score:
-                            # Remove the same pathway with worse score from the list
-                            local_rpsbml_items.remove(item)
-                            # Insert at the good place the new pathway (with better score)
-                            bisect_insort(local_rpsbml_items, sbml_item)
-                        # Leave the loop
-                        break
-
-                # If the pathway currently built is not already in local_sbml_paths
-                # The new built pathway is unique
-                if unique:
-                    # print("INSERT UNIQUE", sbml_item.score)
-                    # If its score is better, then replace the one already in place
-                    # Insert at the good place the new pathway (with better score)
-                    bisect_insort(local_rpsbml_items, sbml_item)
-
-                # Keep only topX
+                # 8) Keep only topX
                 local_rpsbml_items = local_rpsbml_items[-max_subpaths_filter:]
-
-                # print(sbml_item.index, [i.score for i in local_rpsbml_items])
-                    # print(item.rpsbml_obj.outPathsDict())
-                    # print()
 
                 altPathNum += 1
 
@@ -741,8 +713,36 @@ class rpCompletion(rpCofactors):
             #     sbml_paths[item.index] = item.rpsbml_obj
             # sbml_paths += local_sbml_paths
 
-
         return True
+
+    @staticmethod
+    def insert_sbml_item(sbml_item, rpsbml_items):
+        unique = True
+
+        # For each subpath already in local_sbml_paths
+        for item in rpsbml_items:
+            # Compare with the new built pathway
+            if sbml_item.rpsbml_obj == item.rpsbml_obj:
+                unique = False
+                # print(rpsbml.outPathsDict())
+                # If its score is better, then replace the one already in place
+                if sbml_item.score > item.score:
+                    # Remove the same pathway with worse score from the list
+                    rpsbml_items.remove(item)
+                    # Insert at the good place the new pathway (with better score)
+                    bisect_insort(rpsbml_items, sbml_item)
+                # Leave the loop
+                break
+
+        # If the pathway currently built is not already in local_sbml_paths
+        # The new built pathway is unique
+        if unique:
+            # print("INSERT UNIQUE", sbml_item.score)
+            # If its score is better, then replace the one already in place
+            # Insert at the good place the new pathway (with better score)
+            bisect_insort(rpsbml_items, sbml_item)
+
+        return rpsbml_items
 
 
     #############################################################################################
@@ -764,7 +764,7 @@ class rpCompletion(rpCofactors):
     def _parseTSV(self, inFile, remove_inchi_4p=False, mnxHeader=False):
         data = {}
         try:
-            for row in csv.DictReader(open(inFile), delimiter='\t'):
+            for row in csv_DictReader(open(inFile), delimiter='\t'):
                 ######## path_id ######
                 try:
                     pathID = int(row['pathway_ID'])
@@ -1516,7 +1516,7 @@ class rpCompletion(rpCofactors):
 	########### create CSV from input ##########
 	with tempfile.TemporaryDirectory() as tmpOutputFolder:
 		with open(tmpOutputFolder+'/tmp_input.tsv', 'w') as infi:
-			csvfi = csv.writer(infi, delimiter='\t', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+			csvfi = csv_writer(infi, delimiter='\t', quotechar='"', quoting=csv_QUOTE_MINIMAL)
 			header = ['pathway_ID',
                                   'target_name',
                                   'target_structure',
