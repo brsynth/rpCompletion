@@ -21,6 +21,8 @@ class Module(Main):
     func_name = 'rp2ToSBML'
     data_path = 'data'
     args      = argparse_Namespace()
+    # Args have to be set in the order as they be passed
+    args.cache              = None
     args.rp2_pathways       = data_path+'/rp2_pathways.csv'
     args.rp2paths_compounds = data_path+'/rp2paths_compounds.csv'
     args.rp2paths_pathways  = data_path+'/rp2paths_pathways.csv'

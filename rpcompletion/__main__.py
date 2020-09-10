@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-from os import path, mkdir
 from logging import error as logging_error
-from sys import argv
 
-from rpcompletion import rpCompletion, build_args_parser
+from rpCache      import rpCache
+from rpcompletion import rp2ToSBML, build_args_parser
 
 
 def _cli():
@@ -13,10 +12,11 @@ def _cli():
 
     args.pubchem_search = args.pubchem_search.lower() in ['true', 't']
 
-    rpcompletion = rpCompletion(db=args.store_mode)
+    cache = rpCache(db=args.store_mode)
 
     try:
-        rpcompletion.rp2ToSBML(
+        rp2ToSBML(
+            cache,
             args.rp2_pathways,
             args.rp2paths_compounds,
             args.rp2paths_pathways,
