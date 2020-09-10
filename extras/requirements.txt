@@ -1,4 +1,5 @@
 brs_utils
+brs_libs
 credisdict
 certifi
 chardet
