@@ -64,13 +64,14 @@ rpcompletion.rp2ToSBML(args.rp2_pathways,
 ```
 **From CLI**
 ```sh
-python -m rpCompletion \
+python -m rpcompletion \
   rp2_pathways.csv \
   rp2paths_compounds.csv \
   rp2paths_pathways.csv \
+  <outdir>
 ```
 
-### (Re-)generate the cache
+<!-- ### (Re-)generate the cache
 **From Python code**
 ```python
 from rpcompletion import rpCache
@@ -81,7 +82,7 @@ rpCache.generate_cache(outdir)
 After having installed rpCompletion Python module:
 ```sh
 python -m rpcompletion --gen_cache
-```
+``` -->
 
 
 
