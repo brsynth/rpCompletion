@@ -676,7 +676,7 @@ def Write_rp2pathsToSBML(cache,
             sbml_item = SBML_Item(rpsbml.getScore(),
                                   'rp_'+str(path_id)+'_'+str(altPathNum),
                                   rpsbml)
-            local_rpsbml_items = insert_sbml_item(sbml_item, local_rpsbml_items)
+            local_rpsbml_items = insert_and_or_replace_sbml_item(sbml_item, local_rpsbml_items)
 
             # 8) Keep only topX
             local_rpsbml_items = local_rpsbml_items[-max_subpaths_filter:]
@@ -712,55 +712,24 @@ def add_species(rpsbml, meta, sink_molecules, compartment_id, chemName, spe, spe
 
     return rpsbml
 
-## Function to insert/replace sbml items in sbml items list
+## Function to insert and/or replace sbml item in sbml items list
 #
-#  If sbml_item if Reading the RP2path output and extract all the information for each pathway
-#  RP2path Metabolic pathways from out_paths.csv
-#  create all the different values for heterologous paths from the RP2path out_paths.csv file
-#  Note that path_step are in reverse order here
-#
-#  @param self Object pointer
-#  @param path The out_path.csv file path
-#  @max_subpaths_filter maximal numer of subpaths per paths
-#  @outFolder folder where to write files
-#  @return Boolean The success or failure of the function
+#  @param item item to insert
+#  @param list sorted list of items to insert item
+#  @return updated list
 def insert_and_or_replace_sbml_item(item, list):
 
-    # If current item has a higher score than the worst in the list, then it has to be inserted
-    if item.score > list[-1].score:
-        # Remove the same pathway with worse score from the list
-        try:
-            list.pop(list.index(item))
-        except ValueError:
-            pass
-        # Insert at the good place current item in the list
-        bisect_insort(rpsbml_items, sbml_item)
+    # If present, remove the same pathway with worse score from the list
+    try:
+        list.pop(list.index(item))
+    except ValueError:
+        pass
 
-    # unique = True
-    # # For each subpath already in local_sbml_paths
-    # for item in rpsbml_items:
-    #     # Compare with the new built pathway
-    #     if sbml_item.rpsbml_obj == item.rpsbml_obj:
-    #         unique = False
-    #         # print(rpsbml.outPathsDict())
-    #         # If its score is better, then replace the one already in place
-    #         if sbml_item.score > item.score:
-    #             # Remove the same pathway with worse score from the list
-    #             rpsbml_items.remove(item)
-    #             # Insert at the good place the new pathway (with better score)
-    #             bisect_insort(rpsbml_items, sbml_item)
-    #         # Leave the loop
-    #         break
-    #
-    # # If the pathway currently built is not already in local_sbml_paths
-    # # The new built pathway is unique
-    # if unique:
-    #     # print("INSERT UNIQUE", sbml_item.score)
-    #     # If its score is better, then replace the one already in place
-    #     # Insert at the good place the new pathway (with better score)
-    #     bisect_insort(rpsbml_items, sbml_item)
+    # Insert at the good place current item in the list
+    # If the item's score is lower that the last item of the list, then it will be added at the end and cut later when only topX will be kept
+    bisect_insort(list, item)
 
-    return rpsbml_items
+    return list
 
 
 #############################################################################################
