@@ -7,7 +7,7 @@ Created on Jul 15 2020
 from unittest import TestCase
 
 from pathlib import Path
-from os import path as os_path
+from os import stat as os_stat
 
 
 class Main(TestCase):
@@ -15,7 +15,7 @@ class Main(TestCase):
 
     def test(self):
         # print(self.__class__.__name__)
-        if self.__class__.__name__ == 'Test_Main':
+        if self.__class__.__name__ == 'Main':
             self.skipTest('Generic Class')
         else:
             self._preexec  ()
@@ -26,15 +26,20 @@ class Main(TestCase):
     def _preexec(self):
         pass
 
+    def _check(self):
+        self._check_files_hashes()
+
     def _get_func_from_name(self, name):
-        if self.obj:
-            return getattr(self.obj, name)
-        else:
-            if self.cls_name:
-                cls  = getattr(__import__(self.mod_name, fromlist=[self.cls_name]), self.cls_name)
-                return getattr(cls, name)
-            else:
-                return getattr(self.mod_name, name)
+        try:
+            if self.obj:
+                return getattr(self.obj, name)
+        except AttributeError:
+            try:
+                if self.cls_name:
+                    cls  = getattr(__import__(self.mod_name, fromlist=[self.cls_name]), self.cls_name)
+                    return getattr(cls, name)
+            except AttributeError:
+                return getattr(__import__(self.mod_name), name)
 
     def _run(self):
         Main._run_module_func(self._get_func_from_name(self.func_name), self.args)
@@ -42,9 +47,25 @@ class Main(TestCase):
     def _postexec(self):
         pass
 
-    def _check_hashes(self):
-        for file, hash in self.hashes:
+    def _check_files_hashes(self):
+        for file, hash in self.files:
             self.assertTrue(Main._check_file_hash(file, hash))
+
+    def _check_files_size(self):
+        for file, size in self.files:
+            self.assertTrue(Main._check_file_size(file, size))
+
+    @staticmethod
+    def _check_content_hash(content, hash, hash_func='sha256'):
+        module = __import__('hashlib')
+        func = getattr(module, hash_func)
+
+        print()
+        print('-- HASH')
+        print('computed: ', func(content.encode()).hexdigest())
+        print('stored:   ', hash)
+        print('--')
+        return func(content.encode()).hexdigest() == hash
 
     @staticmethod
     def _check_file_hash(file, hash, hash_func='sha256'):
@@ -59,11 +80,22 @@ class Main(TestCase):
         print('--')
         return func(Path(file).read_bytes()).hexdigest() == hash
 
-    def _check_files(self):
-        for file, hash in self.hashes:
-            print()
-            print(file)
-            self.assertTrue(os_path.exists(file))
+    @staticmethod
+    def _check_file_size(file, size):
+        print()
+        print(file)
+        print('-- SIZE')
+        s = os_stat(file).st_size
+        print('computed: ', s)
+        print('stored:   ', size)
+        print('--')
+        return s == size
+
+    # def _check_files(self):
+    #     for file, hash in self.hashes:
+    #         print()
+    #         print(file)
+    #         self.assertTrue(os_path.exists(file))
 
     @staticmethod
     def _sort_file(filename):
@@ -74,4 +106,4 @@ class Main(TestCase):
 
     @staticmethod
     def _run_module_func(func, args):
-        func(*args)
+        func(*list(vars(args).values()))
