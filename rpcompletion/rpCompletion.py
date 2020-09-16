@@ -5,7 +5,6 @@ from requests  import get            as r_get
 from itertools import product        as itertools_product
 from time      import time           as time_time
 from time      import sleep          as time_sleep
-from bisect    import insort         as bisect_insort
 from argparse  import ArgumentParser as argparse_ArgumentParser
 from os        import path           as os_path
 from os        import mkdir          as os_mkdir
@@ -15,6 +14,7 @@ from copy      import deepcopy
 from logging   import getLogger
 from .rpCofactors import add_arguments, addCofactors
 from brs_libs     import rpSBML
+from brs_utils    import insert_and_or_replace_in_sorted_list
 
 #import rpCofactors
 
@@ -58,11 +58,18 @@ class SBML_Item:
         self.rpsbml_obj = rpsbml_obj
 
     def __eq__(self, sbml_item):
-        return self.score == sbml_item.score
+        return self.rpsbml_obj == sbml_item.rpsbml_obj
     def __lt__(self, sbml_item):
         return self.score < sbml_item.score
     def __gt__(self, sbml_item):
         return self.score > sbml_item.score
+    def __str__(self):
+        return 'SBML_Item' + '\n' \
+             + '\t' + 'score:      ' + str(self.score)      + '\n' \
+             + '\t' + 'index:      ' + str(self.index)      + '\n' \
+             + '\t' + 'rpsbml_obj: ' + str(self.rpsbml_obj) + '\n' \
+
+
 
 
 # ## Class to read all the input files
@@ -430,9 +437,9 @@ def _unique_species(cache, meta, rp_strc, pubchem_search):
     except KeyError:
         chemName = None
 
-    #compile as much info as you can
+    # compile as much info as you can
 
-    #xref
+    # xref
     try: xref = cache.cid_xref[meta]
     except KeyError: xref = {}
     spe = Species(None, None, None, xref)
@@ -440,9 +447,9 @@ def _unique_species(cache, meta, rp_strc, pubchem_search):
     ###### Try to recover the structures ####
     pubchem = Species(None, None, None, {})
 
-    #inchi
+    # inchi
     try:
-        #@Joan: Do you make sure here that the spe.inchi is not None?
+        # @Joan: Do you make sure here that the spe.inchi is not None?
         spe.inchi = rp_strc[meta]['inchi']
         if not spe.xref and pubchem_search:
             try:
@@ -480,9 +487,9 @@ def _unique_species(cache, meta, rp_strc, pubchem_search):
                     pubchem.smiles = pubres['smiles']
     except KeyError:
         pass
-    #inchikey
+    # inchikey
     try:
-        #@Joan: The same question with InchI. Are you making sure that inchikey is not None
+        # @Joan: The same question with InchI. Are you making sure that inchikey is not None
         spe.inchikey = rp_strc[meta]['inchikey']
         if not spe.xref and pubchem_search:
             # print("*************")
@@ -490,7 +497,6 @@ def _unique_species(cache, meta, rp_strc, pubchem_search):
             # print("*************")
             # print()
             pubres = _pubchemStrctSearch(spe.inchikey, 'inchikey')
-            #print(pubres)
             if not chemName:
                 chemName = pubres['name']
             if 'chebi' in pubres['xref']:
@@ -607,7 +613,7 @@ def Write_rp2pathsToSBML(cache,
         # second is itertools all possible combinations using product
         altPathNum = 1
         # topX subpaths of the current rp2path pathway
-        local_rpsbml_items = []
+        local_SBMLItems = []
 
         for comb_path in list(itertools_product(*[[(i,y) for y in rp_paths[pathNum][i]] for i in rp_paths[pathNum]])):
             steps = []
@@ -676,18 +682,20 @@ def Write_rp2pathsToSBML(cache,
             sbml_item = SBML_Item(rpsbml.getScore(),
                                   'rp_'+str(path_id)+'_'+str(altPathNum),
                                   rpsbml)
-            local_rpsbml_items = insert_and_or_replace_sbml_item(sbml_item, local_rpsbml_items)
+
+            local_SBMLItems = insert_and_or_replace_in_sorted_list(sbml_item, local_SBMLItems)
 
             # 8) Keep only topX
-            local_rpsbml_items = local_rpsbml_items[-max_subpaths_filter:]
+            local_SBMLItems = local_SBMLItems[-max_subpaths_filter:]
 
             altPathNum += 1
 
         # Write results to files
-        for rpsbml_item in local_rpsbml_items:
+        for rpsbml_item in local_SBMLItems:
             rpsbml_item.rpsbml_obj.writeSBML(outFolder)
 
     return True
+
 
 def add_species(rpsbml, meta, sink_molecules, compartment_id, chemName, spe, species_group_id, sink_species_group_id):
     if meta in sink_molecules:
@@ -711,25 +719,6 @@ def add_species(rpsbml, meta, sink_molecules, compartment_id, chemName, spe, spe
                              species_group_id)
 
     return rpsbml
-
-## Function to insert and/or replace sbml item in sbml items list
-#
-#  @param item item to insert
-#  @param list sorted list of items to insert item
-#  @return updated list
-def insert_and_or_replace_sbml_item(item, list):
-
-    # If present, remove the same pathway with worse score from the list
-    try:
-        list.pop(list.index(item))
-    except ValueError:
-        pass
-
-    # Insert at the good place current item in the list
-    # If the item's score is lower that the last item of the list, then it will be added at the end and cut later when only topX will be kept
-    bisect_insort(list, item)
-
-    return list
 
 
 #############################################################################################
