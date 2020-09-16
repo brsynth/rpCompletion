@@ -1,3 +1,6 @@
+1.0.8 - Sep 16, 2020
+    - refactor tests
+
 1.0.7 - Sep 10, 2020
     - remove rpCofactors and rpCompletion classes
 
