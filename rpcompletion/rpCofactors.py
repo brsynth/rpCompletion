@@ -304,7 +304,7 @@ def addCofactors(cache, rpsbml, compartment_id='MNXC3', pathway_id='rp_pathway')
                             inchikey,
                             smiles)
             #add the new species to the RP reactions
-            reac = rpsbml.model.getReaction(rp_path[stepNum]['reaction_id'])
+            reac = rpsbml.getModel().getReaction(rp_path[stepNum]['reaction_id'])
             pre_reactants = [i.species for i in reac.getListOfReactants()]
             pre_products = [i.species for i in reac.getListOfProducts()]
             for pro in products:
