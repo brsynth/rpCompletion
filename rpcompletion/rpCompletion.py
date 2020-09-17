@@ -23,7 +23,7 @@ from brs_utils    import insert_and_or_replace_in_sorted_list
 # Collection of functions that convert the outputs from various sources to the SBML format (rpSBML) for further analyses
 
 def build_args_parser():
-    parser = argparse_ArgumentParser('Python wrapper to parse RP2 to generate rpSBML collection of unique and complete (cofactors) pathways')
+    parser = argparse_ArgumentParser(prog='rpcompletion', description='Python wrapper to parse RP2 to generate rpSBML collection of unique and complete (cofactors) pathways')
     parser = _add_arguments(parser)
 
     return parser
