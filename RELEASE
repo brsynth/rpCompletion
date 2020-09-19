@@ -1,3 +1,7 @@
+1.1.0 - Sep 19, 2020
+    - rename src folder
+    - absolute imports
+
 1.0.9 - Sep 17, 2020
     - fix prog name in cli
 
