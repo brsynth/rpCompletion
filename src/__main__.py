@@ -14,22 +14,23 @@ def _cli():
     cache = rpCache(db=args.store_mode)
 
     try:
-        rp2ToSBML(
-            cache,
-            args.rp2_pathways,
-            args.rp2paths_compounds,
-            args.rp2paths_pathways,
-            args.outdir,
-            int(args.upper_flux_bound),
-            int(args.lower_flux_bound),
-            int(args.max_subpaths_filter),
-            args.pathway_id,
-            args.compartment_id,
-            args.species_group_id,
-            args.sink_species_group_id,
-            args.pubchem_search)
+        result = rp2ToSBML(cache,
+                           args.rp2_pathways,
+                           args.rp2paths_compounds,
+                           args.rp2paths_pathways,
+                           args.outdir,
+                           int(args.upper_flux_bound),
+                           int(args.lower_flux_bound),
+                           int(args.max_subpaths_filter),
+                           args.pathway_id,
+                           args.compartment_id,
+                           args.species_group_id,
+                           args.sink_species_group_id,
+                           args.pubchem_search)
+        return result
     except ValueError as e:
         logging_error(str(e))
+        return 2
 
 
 

@@ -604,7 +604,7 @@ def Write_rp2pathsToSBML(cache,
         compid = cache.deprecatedCompID_compid[compartment_id]
     except KeyError:
         logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
-        return False
+        return 1
 
 
     for pathNum in rp_paths:
@@ -694,7 +694,7 @@ def Write_rp2pathsToSBML(cache,
         for rpsbml_item in local_SBMLItems:
             rpsbml_item.rpsbml_obj.writeSBML(outFolder)
 
-    return True
+    return 0
 
 
 def add_species(rpsbml, meta, sink_molecules, compartment_id, chemName, spe, species_group_id, sink_species_group_id):

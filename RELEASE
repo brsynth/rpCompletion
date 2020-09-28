@@ -1,3 +1,7 @@
+1.2.0 - Sep 28, 2020
+    - change output error codes
+      * 1: Could not Xref compartment_id
+
 1.1.0 - Sep 19, 2020
     - rename src folder
     - absolute imports
