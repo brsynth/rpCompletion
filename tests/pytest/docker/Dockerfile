@@ -1,19 +1,17 @@
 ARG IMAGE
 FROM ${IMAGE}
 
-RUN conda install -y -c rdkit rdkit \
- && conda install -y -c anaconda redis
+RUN conda update -n base -c defaults conda
 
-ARG PKG
-COPY tests/pytest/requirements.txt requirements-test.txt
-COPY extras/requirements.txt requirements-src.txt
-# install requirements
-RUN python3 -m pip install --upgrade pip \
- && python3 -m pip install --no-cache-dir --upgrade -r requirements-test.txt \
- && python3 -m pip install --no-cache-dir --upgrade -r requirements-src.txt
+COPY tests/pytest/conda_run.in  .
+COPY tests/pytest/conda_test.in .
+RUN conda install -y \
+      --file conda_run.in \
+      --file conda_test.in
 
 ARG HOME
 WORKDIR ${HOME}/tests
-
 ADD tests .
+
+ARG PKG
 ADD ${PKG} ${PKG}
