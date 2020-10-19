@@ -679,7 +679,7 @@ def Write_rp2pathsToSBML(cache,
             addCofactors(cache, rpsbml)
 
             # 7) Insert the new rpsbml object in sorted rpsbml_items list
-            sbml_item = SBML_Item(rpsbml.getScore(),
+            sbml_item = SBML_Item(rpsbml.compute_score(),
                                   'rp_'+str(path_id)+'_'+str(altPathNum),
                                   rpsbml)
 
