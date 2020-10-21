@@ -1,3 +1,6 @@
+1.2.1 - Oct 19, 2020
+    - call compute_score() since the score is not computed in rpSBML constructor
+
 1.2.0 - Sep 28, 2020
     - change output error codes
       * 1: Could not Xref compartment_id

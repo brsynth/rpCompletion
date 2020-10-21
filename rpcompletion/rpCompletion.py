@@ -682,7 +682,7 @@ def Write_rp2pathsToSBML(cache,
             sbml_item = SBML_Item(rpsbml.compute_score(),
                                   'rp_'+str(path_id)+'_'+str(altPathNum),
                                   rpsbml)
-
+            
             local_SBMLItems = insert_and_or_replace_in_sorted_list(sbml_item, local_SBMLItems)
 
             # 8) Keep only topX
