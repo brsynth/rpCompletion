@@ -1,0 +1,7 @@
+channels:
+  - conda-forge
+  - anaconda
+  - defaults
+dependencies:
+  - pytest
+  - redis

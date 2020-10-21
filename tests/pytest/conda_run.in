@@ -1,5 +1,0 @@
-brsynth::brs_utils
-brsynth::brs_libs
-brsynth::credisdict
-conda-forge::requests
-conda-forge::urllib3
