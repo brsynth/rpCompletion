@@ -1,6 +1,8 @@
 # rpCompletion
 
-[![Anaconda-Server Badge](https://anaconda.org/brsynth/rpcompletion/badges/latest_release_date.svg)](https://anaconda.org/brsynth/rpcompletion) [![Anaconda-Server Badge](https://anaconda.org/brsynth/rpcompletion/badges/version.svg)](https://anaconda.org/brsynth/rpcompletion)
+[![Anaconda-Server Badge](https://anaconda.org/brsynth/rpcompletion/badges/latest_release_date.svg)](https://anaconda.org/brsynth/rpcompletion)
+[![Anaconda-Server Badge](https://anaconda.org/brsynth/rpcompletion/badges/version.svg)](https://anaconda.org/brsynth/rpcompletion)
+![Test suite](https://github.com/brsynth/brs-libs/workflows/Test%20suite/badge.svg)
 
 Completes mono-component reactions output by RetroPath2.0 with the appropriate cofactors. Creates sub-paths when multiple reaction rules are associated with a single reaction. Input is a single pathways file produced by RP2Paths. It stands on rpCache which store pre-computed data.
 
