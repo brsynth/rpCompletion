@@ -96,6 +96,16 @@ pubchem_min_start = 0.0
 #######################################################################
 
 def _pubChemLimit():
+    """Function to wait until the allowed number of requests can be made to pubChem
+
+    No more than 5 requests per second.
+    No more than 400 requests per minute.
+    No longer than 300 second running time per minute.
+    Requests exceeding limits are rejected (HTTP 503 error)
+
+    :rtype: None
+    :return: None
+    """
     global pubchem_min_count, pubchem_min_start
     if pubchem_min_start==0.0:
         pubchem_min_start = time_time()
@@ -110,14 +120,19 @@ def _pubChemLimit():
         pubchem_min_start = time_time()
         pubchem_min_count = 0
 
-## Try to retreive the xref from an inchi structure using pubchem
-#
-# No more than 5 requests per second. No more than 400 requests per minute. No longer than 300 second running time per minute. Requests exceeding limits are rejected (HTTP 503 error)
-# @param self The object pointer
-# @param strct Strucutre string of the molecule
-# @param itype Input type of the structure. Accepted values are: inchi, inchikey, smiles
-# @return Dict with the following structure: {'name': name, 'inchi': inchi, 'inchikey': inchikey, 'smiles': smiles, 'xref': xref}
+
 def _pubchemStrctSearch(strct, itype='inchi'):
+    """Try to retreive the xref from an inchi structure using pubchem
+
+    :param strct: The input structure
+    :param itype: The type of input. Valid options: inchi, inchikey, smiles
+
+    :type strct: str
+    :type itype: str
+
+    :rtype: dict
+    :return: The resulting cross reference and structures
+    """
     _pubChemLimit()
     try:
         r = r_post('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'+str(itype)+'/xrefs/SBURL/JSON', data={itype: strct})
@@ -197,22 +212,7 @@ def _pubchemStrctSearch(strct, itype='inchi'):
 ############################ RP2paths entry functions #########
 ###############################################################
 
-## Function to group all the functions for parsing RP2 output to SBML files
-#
-# Takes RP2paths's compounds.txt and out_paths.csv and RetroPaths's *_scope.csv files and generates SBML files, where each individual file contains a single heterologous file
-#
-# @param rp2_pathways Path (string) to the output file of RetroPath2.0
-# @param rp2paths_compounds Path (string) to the RP2paths compounds file
-# @param rp2paths_pathways Path (string) to the RP2paths pathways file
-# @param outdir folder where to write files
-# @param upper_flux_bound Upper flux bound for all reactions that will be created (default: 999999)
-# @param lower_flux_bound Lower flux bound for all reactions that will be created (default: 0)
-# @param max_subpaths_filter The maximal number of subpaths per path (default: 10)
-# @param pathway_id Groups id that will contain all the heterologous reactions
-# @param compartment_id The Groups id of the SBML's model compartment where to add the reactions
-# @param species_group_id The Groups id of the central species of the heterologous pathway
-# @param species_group_id The Groups id of the sink species of the heterologous pathway
-# @return Boolean The success or failure of the function
+
 def rp2ToSBML(cache,
               rp2_pathways,
               rp2paths_compounds,
@@ -226,7 +226,39 @@ def rp2ToSBML(cache,
               species_group_id='central_species',
               sink_species_group_id='rp_sink_species',
               pubchem_search=False):
+    """Function to group all the functions for parsing RP2 output to SBML files
+    
+    Takes RP2paths's compounds.txt and out_paths.csv and RetroPaths's *_scope.csv files and generates SBML
 
+    :param rp2_pathways: The RetroPath2.0 results scope file
+    :param rp2paths_pathways: The rp2paths result pathway (out_paths) file
+    :param rp2paths_compounds: The rp2paths result compounds file
+    :param tmpOutputFolder: A folder to output the results (Default: None)
+    :param upper_flux_bound: The default upper flux bound (Default: 999999)
+    :param lower_flux_bound: The default lower flux bound (Default: 0)
+    :param maxRuleIds: The maximal number of rules associated with each step (Default: 10)
+    :param pathway_id: The Groups heterologous pathway id (Default: rp_pathway)
+    :param compartment_id: The compartment SBML id (Default: MNXC3)
+    :param species_group_id: The Groups id of the central species (Default: central_species)
+    :param sink_species_group_id: The Groups id of the rp_sink_species (Default: rp_sink_species)
+    :param pubchem_search: Use the pubchem database to search for missing cross reference (Default: False)
+
+    :type rp2_pathways: str 
+    :type rp2paths_pathways: str
+    :type rp2paths_compounds: str
+    :type tmpOutputFolder: str
+    :type upper_flux_bound: int
+    :type lower_flux_bound: int
+    :type maxRuleIds: int
+    :type pathway_id: str
+    :type compartment_id: str
+    :type species_group_id: str
+    :type sink_species_group_id: str
+    :type pubchem_search: bool
+
+    :rtype: dict
+    :return: Dictionnary of pathways results
+    """
     if max_subpaths_filter<0:
         raise ValueError('Max number of subpaths cannot be less than 0: '+str(max_subpaths_filter))
 
@@ -250,15 +282,19 @@ def rp2ToSBML(cache,
                                 sink_species_group_id,
                                 pubchem_search)
 
-## Function to parse the compounds.txt file
-#
-#  Extract the smile and the structure of each compounds of RP2Path output
-#  Method to parse all the RP output compounds.
-#
-#  @param self Object pointer
-#  @param path The compounds.txt file path
-#  @return rp_compounds Dictionnary of smile and structure for each compound
+
 def _compounds(cache, path):
+    """Function to parse the compounds.txt file
+    
+    Extract the smile and the structure of each compounds of RP2Path output. Method to parse all the RP output compounds.
+
+    :param path: Path to the compounds file
+
+    :type path: str 
+
+    :rtype: dict
+    :return: Dictionnary of compounds results
+    """
     #self.rp_strc = {}
     rp_strc = {}
     try:
@@ -294,14 +330,18 @@ def _compounds(cache, path):
     return rp_strc
 
 
-## Function to parse the scope.csv file
-#
-# Extract the reaction rules from the retroPath2.0 output using the scope.csv file
-#
-# @param self Object pointer
-# @param path The scope.csv file path
-# @return tuple with dictionnary of all the reactions rules and the list unique molecules that these apply them to
 def _transformation(path):
+    """Function to parse the scope.csv file
+    
+    Extract the reaction rules from the retroPath2.0 output using the scope.csv file
+
+    :param path: Path to the compounds file
+
+    :type path: str 
+
+    :rtype: tuple
+    :return: The RetroPath transformation and the list of sink molecules
+    """
     rp_transformation = {}
     sink_molecules = []
     #### we might pass binary in the REST version
@@ -727,17 +767,22 @@ def add_species(rpsbml, meta, sink_molecules, compartment_id, chemName, spe, spe
 
 
 
-## Function to parse the TSV of measured heterologous pathways to SBML
-#
-# TODO: update this to the new compartements and others
-# Given the TSV of measured pathways, parse them to a dictionnary, readable to next be parsed
-# to SBML
-#
-# @param self object pointer
-# @param inFile The input JSON file
-# @param mnxHeader Reorganise the results around the target MNX products
-# @return Dictionnary of SBML
 def _parseTSV(inFile, remove_inchi_4p=False, mnxHeader=False):
+    """Function to parse the TSV of measured heterologous pathways to SBML
+
+    Given the TSV of measured pathways, parse them to a dictionnary, readable to next be parsed to SBML
+
+    :param inFile: The input TSV file
+    :param remove_inchi_4p: Remove the 4th dimentsion of inchi's when adding them to SBML files
+    :param mnxHeader: Reorganise the results around the target MNX products
+
+    :type inFile: str
+    :type remove_inchi_4p: bool
+    :type mnxHeader: bool
+
+    :rtype: dict
+    :return: The dictionary of the pathways
+    """
     data = {}
     try:
         for row in csv_DictReader(open(inFile), delimiter='\t'):
@@ -883,13 +928,6 @@ def _parseTSV(inFile, remove_inchi_4p=False, mnxHeader=False):
         return toRetTwo
 
 
-## Parse the validation TSV to SBML
-#
-# Parse the TSV file to SBML format and adds them to the sbml_paths
-#
-# @param self Object pointer
-# @param inFile Input file
-# @param compartment_id compartment of the
 # TODO: update this with the new SBML groups
 def TSVtoSBML(cache,
               inFile,
@@ -900,6 +938,29 @@ def TSVtoSBML(cache,
               pathway_id='rp_pathway',
               species_group_id='central_species',
               header_name=''):
+    """Parse the TSV file to SBML format and adds them to the self.sbml_paths
+
+    :param inFile: The input TSV file
+    :param tmpOutputFolder: A folder to output the results (Default: None)
+    :param upper_flux_bound: The default upper flux bound (Default: 999999)
+    :param lower_flux_bound: The default lower flux bound (Default: 0)
+    :param compartment_id: The compartment SBML id (Default: MNXC3)
+    :param pathway_id: The Groups heterologous pathway id (Default: rp_pathway)
+    :param species_group_id: The Groups id of the central species (Default: central_species)
+    :param header_name: Overwrite the name given to the SBML files generated
+
+    :type inFile: str
+    :type tmpOutputFolder: str
+    :type upper_flux_bound: int
+    :type lower_flux_bound: int
+    :type compartment_id: str
+    :type pathway_id: str
+    :type species_group_id: str
+    :type header_name: str
+
+    :rtype: dict
+    :return: The dictionary of the pathways
+    """
     data = _parseTSV(inFile)
     sbml_paths = {}
     if header_name=='':

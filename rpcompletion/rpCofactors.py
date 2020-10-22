@@ -60,16 +60,25 @@ logger = logging.getLogger(__name__)
 ######################### PUBLIC FUNCTIONS #####################
 ################################################################
 
-## Given a dictionnary describing a monocomponent reaction, add the cofactors by comparing it with the original reaction
-#
-# @param step Dictionnary describing the reaction
-# @param reac_side String 'right' or 'left' describing the direction of the monocomponent reaction compared with the original reaction
-# @param rr_reac Dictionnary describing the monocomponent reaction from RetroRules
-# @param f_reac Dictionnary describing the full original reaction
-# @param pathway_cmp Dictionnary used to retreive the public ID of the intermediate compounds. Resets for each individual pathway
-#
-def completeReac(cache, step, rr_reac, full_reac, mono_side, rr_string, pathway_cmp):
 
+def completeReac(cache, step, rr_reac, full_reac, mono_side, rr_string, pathway_cmp):
+    """Given a dictionnary describing a monocomponent reaction, add the cofactors by comparing it with the original reaction
+
+    :param step: Dictionnary describing the reaction
+    :param reac_side: String 'right' or 'left' describing the direction of the monocomponent reaction compared with the original reaction
+    :param rr_reac: Dictionnary describing the monocomponent reaction from RetroRules
+    :param f_reac: Dictionnary describing the full original reaction
+    :param pathway_cmp: Dictionnary used to retreive the public ID of the intermediate compounds. Resets for each individual pathway
+
+    :type step: dict
+    :type reac_side: str
+    :type rr_reac: dict
+    :type f_reac: dict
+    :type pathway_cmp: dict 
+
+    :rtype: tuple
+    :return: The tuple with the status of the function and the complete reaction string
+    """
     if mono_side:
         ## add the unknown species to pathway_cmp for the next steps
         rr_mono_cmp = list(rr_reac.keys())
@@ -135,12 +144,18 @@ def update_stochio(cache, step, full_reac, rr_string, pathway_cmp):
         return rr_string
 
 
-## Add the cofactors to monocomponent reactions
-#
-# @param step Step in a pathway
-# @param pathway_cmp Dictionnary of intermediate compounds with their public ID's
-# @return Boolean determine if the step is to be added
 def addCofactors_step(cache, step, pathway_cmp):
+    """Add the cofactors to monocomponent reactions
+
+    :param step: Step in a pathway
+    :param pathway_cmp: Intermediate compounds with their public ID's
+
+    :type step: dict
+    :type pathway_cmp: dict 
+
+    :rtype: bool
+    :return: Success or failure of the function
+    """
     reac_smiles_left = step['reaction_rule'].split('>>')[0]
     reac_smiles_right = step['reaction_rule'].split('>>')[1]
     if cache.rr_reactions[step['rule_id']][step['rule_ori_reac']]['rel_direction']==-1:
@@ -204,14 +219,24 @@ def addCofactors_step(cache, step, pathway_cmp):
     return True
 
 
-## Function to reconstruct the heterologous pathway
-#
-#  Read each pathway information and RetroRules information to construct heterologous pathways and add the cofactors
-#
-#  @param self Object pointer
-#  @param rpsbml rpSBML object with a single model
-#  @return Boolean if True then you keep that model for the next step, if not then ignore it
 def addCofactors(cache, rpsbml, compartment_id='MNXC3', pathway_id='rp_pathway'):
+    """Function to reconstruct the heterologous pathway
+
+    Read each pathway information and RetroRules information to construct heterologous pathways and add the cofactors
+
+    :param rpsbml: The rpSBML object with a single model
+    :param compartment_id: The id of the SBML compartment of interest 
+    :param pathway_id: The Groups id of the heterologous pathway 
+    :param pubchem_search: Query the pubchem database 
+
+    :type rpsbml: rpSBML
+    :type compartment_id: str 
+    :type pathway_id: str
+    :type pubchem_search: bool 
+
+    :rtype: bool
+    :return: Success or failure of the function
+    """
     #This keeps the IDs conversions to the pathway
     pathway_cmp = {}
     spe_conv = {}
