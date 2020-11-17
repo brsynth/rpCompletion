@@ -620,7 +620,7 @@ def Write_rp2pathsToSBML(cache,
             for i, y in comb_path:
                 steps.append(rp_paths[pathNum][i][y])
             path_id = steps[0]['path_id']
-            rpsbml = rpSBML('rp_'+str(path_id)+'_'+str(altPathNum))
+            rpsbml = rpSBML(name='rp_'+str(path_id)+'_'+str(altPathNum))
 
             # 1) Create a generic Model, ie the structure and unit definitions that we will use the most
             ##### TODO: give the user more control over a generic model creation:
@@ -911,7 +911,7 @@ def TSVtoSBML(cache,
         except KeyError:
             logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
             return False
-        rpsbml = rpSBML.rpSBML(header_name+'_'+str(path_id))
+        rpsbml = rpSBML.rpSBML(name=header_name+'_'+str(path_id))
         # 1) create a generic Model, ie the structure and unit definitions that we will use the most
         ##### TODO: give the user more control over a generic model creation:
         # -> special attention to the compartment

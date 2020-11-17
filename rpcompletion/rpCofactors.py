@@ -349,8 +349,7 @@ def run(cache, input_file, output_dir='', pathway_id='rp_pathway', compartment_i
         return False
 
     modelName = os_path.basename(input_file).replace('.sbml', '').replace('.xml', '').replace('.rpsbml', '')
-    rpsbml = rpSBML.rpSBML(modelName)
-    rpsbml.readSBML(input_file)
+    rpsbml = rpSBML.rpSBML(input_file, name=modelName)
     addCofactors(cache, rpsbml, compartment_id, pathway_id)
 
     outdir = output_dir
