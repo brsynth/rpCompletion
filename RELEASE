@@ -1,3 +1,6 @@
+1.2.2 - Nov 20, 2020
+    - replace "+'/'+" by "os.path.join()" to be compliant with non-Unix OSs
+
 1.2.1 - Oct 19, 2020
     - call compute_score() since the score is not computed in rpSBML constructor
 
