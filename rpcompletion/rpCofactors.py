@@ -1,9 +1,9 @@
 import logging
-from copy     import deepcopy
-from brs_libs import rpSBML
+from copy import deepcopy
 
 
 logger = logging.getLogger(__name__)
+
 
 ################################################################
 ######################### PUBLIC FUNCTIONS #####################
