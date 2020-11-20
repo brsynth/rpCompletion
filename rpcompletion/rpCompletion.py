@@ -29,7 +29,6 @@ def build_args_parser():
     return parser
 
 def _add_arguments(parser):
-    parser = add_arguments(parser)
     parser.add_argument('rp2_pathways', type=str)
     parser.add_argument('rp2paths_compounds', type=str)
     parser.add_argument('rp2paths_pathways', type=str)
