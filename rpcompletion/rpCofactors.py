@@ -1,59 +1,8 @@
 import logging
-
-from sys import argv as sys_argv
-from os import path as os_path
-from os import mkdir as os_mkdir
-from copy import deepcopy
-from argparse import ArgumentParser as argparse_ArgParser
-
-from brs_libs import rpSBML, rpCache, rpCache_add_args
+from copy     import deepcopy
+from brs_libs import rpSBML
 
 
-def add_arguments(parser):
-    parser = rpCache_add_args(parser)
-    parser.add_argument('-input_file', type=str)
-    parser.add_argument('-output_dir', type=str, default='')
-    parser.add_argument('-pathway_id', type=str, default='rp_pathway')
-    parser.add_argument('-compartment_id', type=str, default='MNXC3')
-    return parser
-
-
-def build_parser():
-    parser = argparse_ArgParser('Add the missing cofactors to the monocomponent reactions to the SBML outputs of rpReader')
-    parser = add_arguments(parser)
-    return parser
-
-
-def entrypoint(args=sys_argv[1:]):
-    parser = build_parser()
-
-    params = parser.parse_args(args)
-
-    cache = rpCache(params.store_mode)
-    run(cache,
-        params.input_file,
-        params.output_dir,
-        params.pathway_id,
-        params.compartment_id)
-
-
-if __name__ == "__main__":
-
-    entrypoint(sys_argv[1:])
-
-
-# ## Class to add the cofactors to a monocomponent reaction to construct the full reaction
-# #
-# #
-# class rpCofactors(rpCache):
-#     ## Init method
-#     # Here we want to seperate what is the use input and what is parsed by the cache to make sure that
-#     # everything is not hadled by a single
-#     #
-#     # @param rpReader input reader object with the parsed user input and cache files required
-#     #DEPRECATED def __init__(rpReader, userXrefDbName=None):
-#     def __init__(db='file'):
-#         super().__init__(db)
 logger = logging.getLogger(__name__)
 
 ################################################################
@@ -337,32 +286,4 @@ def addCofactors(cache, rpsbml, compartment_id='MNXC3', pathway_id='rp_pathway')
             #if the cofactors cannot be found delete it from the list
             logger.warning('Cannot find cofactors... skipping')
             return False
-    return True
-
-
-## run using HDD 3X less than the above function
-#
-#
-def run(cache, input_file, output_dir='', pathway_id='rp_pathway', compartment_id='MNXC3'):
-    if not os_path.isfile(input_file):
-        logging.error('Input filename does not exist.')
-        return False
-
-    modelName = os_path.basename(input_file).replace('.sbml', '').replace('.xml', '').replace('.rpsbml', '')
-    rpsbml = rpSBML.rpSBML(input_file, name=modelName)
-    addCofactors(cache, rpsbml, compartment_id, pathway_id)
-
-    outdir = output_dir
-    if outdir=='':
-        outdir = os_path.dirname(input_file)
-    output_file = outdir+'/'+modelName+'-completed.xml'
-    if not os_path.isdir(outdir):
-        os_mkdir(outdir)
-
-    rpsbml.writeSBMLToFile(output_file)
-
-    if os_path.getsize(output_file)==0:
-        logging.error('rpCofactors has not produced any results')
-        return False
-
     return True
