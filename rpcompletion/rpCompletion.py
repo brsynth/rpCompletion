@@ -12,9 +12,9 @@ from json      import decoder        as json_decoder
 from io        import StringIO
 from copy      import deepcopy
 from logging   import getLogger
-from rpcompletion.rpCofactors import add_arguments, addCofactors
-from brs_libs                 import rpSBML
-from brs_utils                import insert_and_or_replace_in_sorted_list
+from brs_libs  import rpSBML
+from brs_utils import insert_and_or_replace_in_sorted_list
+from rpcompletion.rpCofactors import addCofactors
 
 #import rpCofactors
 
@@ -692,7 +692,7 @@ def Write_rp2pathsToSBML(cache,
 
         # Write results to files
         for rpsbml_item in local_SBMLItems:
-            rpsbml_item.rpsbml_obj.writeSBML(outFolder+'/'+str(rpsbml_item.rpsbml_obj.modelName)+'_sbml.xml')
+            rpsbml_item.rpsbml_obj.writeSBML(os_path.join(outFolder, str(rpsbml_item.rpsbml_obj.modelName))+'_sbml.xml')
 
     return 0
 
