@@ -1,5 +1,0 @@
-brs_utils
-brs_libs
-credisdict
-requests
-urllib3

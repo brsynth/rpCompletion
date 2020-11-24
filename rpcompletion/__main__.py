@@ -11,7 +11,7 @@ def _cli():
 
     args.pubchem_search = args.pubchem_search.lower() in ['true', 't']
 
-    cache = rpCache(db=args.store_mode)
+    cache = rpCache(db='file')
 
     try:
         result = rp2ToSBML(cache,

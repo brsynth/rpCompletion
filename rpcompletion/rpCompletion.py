@@ -12,37 +12,15 @@ from json      import decoder        as json_decoder
 from io        import StringIO
 from copy      import deepcopy
 from logging   import getLogger
-from rpcompletion.rpCofactors import add_arguments, addCofactors
-from brs_libs                 import rpSBML
-from brs_utils                import insert_and_or_replace_in_sorted_list
+from brs_libs  import rpSBML
+from brs_utils import insert_and_or_replace_in_sorted_list
+from rpcompletion.rpCofactors import addCofactors
 
 #import rpCofactors
 
 ## @package rpCompletion
 #
 # Collection of functions that convert the outputs from various sources to the SBML format (rpSBML) for further analyses
-
-def build_args_parser():
-    parser = argparse_ArgumentParser(prog='rpcompletion', description='Python wrapper to parse RP2 to generate rpSBML collection of unique and complete (cofactors) pathways')
-    parser = _add_arguments(parser)
-
-    return parser
-
-def _add_arguments(parser):
-    parser = add_arguments(parser)
-    parser.add_argument('rp2_pathways', type=str)
-    parser.add_argument('rp2paths_compounds', type=str)
-    parser.add_argument('rp2paths_pathways', type=str)
-    parser.add_argument('outdir', type=str)
-    parser.add_argument('--upper_flux_bound', type=int, default=999999)
-    parser.add_argument('--lower_flux_bound', type=int, default=0)
-    parser.add_argument('--max_subpaths_filter', type=int, default=10)
-    parser.add_argument('--pathway_id', type=str, default='rp_pathway')
-    parser.add_argument('--compartment_id', type=str, default='MNXC3')
-    parser.add_argument('--species_group_id', type=str, default='central_species')
-    parser.add_argument('--sink_species_group_id', type=str, default='rp_sink_species')
-    parser.add_argument('--pubchem_search', type=str, default='False')
-    return parser
 
 class Species:
     def __init__(self, inchi, inchikey, smiles, xref):
@@ -660,7 +638,7 @@ def Write_rp2pathsToSBML(cache,
             for i, y in comb_path:
                 steps.append(rp_paths[pathNum][i][y])
             path_id = steps[0]['path_id']
-            rpsbml = rpSBML('rp_'+str(path_id)+'_'+str(altPathNum))
+            rpsbml = rpSBML(name='rp_'+str(path_id)+'_'+str(altPathNum))
 
             # 1) Create a generic Model, ie the structure and unit definitions that we will use the most
             ##### TODO: give the user more control over a generic model creation:
@@ -724,7 +702,7 @@ def Write_rp2pathsToSBML(cache,
             sbml_item = SBML_Item(rpsbml.compute_score(),
                                   'rp_'+str(path_id)+'_'+str(altPathNum),
                                   rpsbml)
-            
+
             local_SBMLItems = insert_and_or_replace_in_sorted_list(sbml_item, local_SBMLItems)
 
             # 8) Keep only topX
@@ -734,7 +712,7 @@ def Write_rp2pathsToSBML(cache,
 
         # Write results to files
         for rpsbml_item in local_SBMLItems:
-            rpsbml_item.rpsbml_obj.writeSBML(outFolder)
+            rpsbml_item.rpsbml_obj.writeSBML(os_path.join(outFolder, str(rpsbml_item.rpsbml_obj.modelName))+'_sbml.xml')
 
     return 0
 
@@ -974,7 +952,7 @@ def TSVtoSBML(cache,
         except KeyError:
             logger.error('Could not Xref compartment_id ('+str(compartment_id)+')')
             return False
-        rpsbml = rpSBML.rpSBML(header_name+'_'+str(path_id))
+        rpsbml = rpSBML.rpSBML(name=header_name+'_'+str(path_id))
         # 1) create a generic Model, ie the structure and unit definitions that we will use the most
         ##### TODO: give the user more control over a generic model creation:
         # -> special attention to the compartment
