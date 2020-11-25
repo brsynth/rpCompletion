@@ -653,8 +653,8 @@ def Write_rp2pathsToSBML(cache,
 
             # 2) Create the pathway (groups)
             rpsbml.createPathway(pathway_id)
-			rpsbml.addUpdateBRSynth(path_group, 'path_id', path_id, None, False, False, False)
-			rpsbml.addUpdateBRSynth(path_group, 'sub_path_id', alt_path_num, None, False, False, False)
+            rpsbml.addUpdateBRSynth(path_group, 'path_id', path_id, None, False, False, False)
+            rpsbml.addUpdateBRSynth(path_group, 'sub_path_id', alt_path_num, None, False, False, False)
             rpsbml.createPathway(species_group_id)
             rpsbml.createPathway(sink_species_group_id)
 
