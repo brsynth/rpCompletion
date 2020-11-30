@@ -73,27 +73,17 @@ python -m rpcompletion \
   <outdir>
 ```
 
-<!-- ### (Re-)generate the cache
-**From Python code**
-```python
-from rpcompletion import rpCache
+## Tests
+Test can be run with the following commands:
 
-rpCache.generate_cache(outdir)
-```
-**From CLI**
-After having installed rpCompletion Python module:
-```sh
-python -m rpcompletion --gen_cache
-``` -->
-
-
-
-### Test
-Tests can be runned. To do so, please follow insructions below:
-```
+### Natively
+```bash
 cd tests
-./test-in-docker.sh
+pytest -v
 ```
+
+# CI/CD
+For further tests and development tools, a CI toolkit is provided in `ci` folder (see [ci/README.md](ci/README.md)).
 
 
 ## Authors
