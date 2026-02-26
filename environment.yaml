@@ -1,0 +1,11 @@
+name: rpextractsink
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas
+  - rdkit
+  - rr_cache
+  - brs_utils
+  - rxn_rebuild
+  - rplibs

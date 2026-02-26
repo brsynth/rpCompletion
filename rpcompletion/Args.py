@@ -1,15 +1,18 @@
 from argparse import ArgumentParser
-from os import path as os_path
 
+from brs_utils import add_logger_args
 
 default_upper_flux_bound = 10000
 default_lower_flux_bound = -default_upper_flux_bound
 default_maxsubpaths = 10
 default_cofactors = None
-default_cspace = 'mnx3.1'
+default_cspace = 'mnx4.4'
 
 
 def add_arguments(parser: ArgumentParser) -> ArgumentParser:
+    # Add arguments related to the logger
+    parser = add_logger_args(parser)
+
     parser.add_argument(
         'rp2_metnet',
         type=str,

@@ -6,8 +6,8 @@ Created on Jul 15 2020
 
 from tempfile             import TemporaryDirectory
 from rr_cache import rrCache
-from rptools.rplibs       import rpPathway
-from rptools.rpcompletion import rp_completion
+from rplibs       import rpPathway
+from rpcompletion import rp_completion
 # from rptools.rpcompletion.rpCompletion import (
 #     # build_side_rxn,
 #     # rp2paths_to_dict

@@ -36,14 +36,14 @@ In order to save memory space, cache data can be loaded once in a database (redi
 
 
 ## Install
-Please see `rptool` documentation.
+conda install -c conda-forge rpcompletion
 
 ## Run
 
 ### rpCompletion process
 **From Python code**
 ```python
-from rptools.rpcompletion import rp_completion
+from rpcompletion import rp_completion
 
 pathways = rp_completion(
     rp2_metnet_filename,
@@ -54,7 +54,7 @@ pathways = rp_completion(
 ```
 **From CLI**
 ```sh
-python -m rptools.rpcompletion \
+python -m rpcompletion \
   rp2_metnet.csv \
   sink.csv \
   rp2paths_compounds.csv \
@@ -70,9 +70,6 @@ Test can be run with the following commands:
 cd tests
 pytest -v
 ```
-
-## CI/CD
-For further tests and development tools, a CI toolkit is provided in `ci` folder (see [ci/README.md](ci/README.md)).
 
 ## Authors
 

@@ -23,13 +23,13 @@ from brs_utils import (
 )
 from rr_cache import rrCache
 from rxn_rebuild import rebuild_rxn
-from rptools.rplibs import (
+from rplibs import (
     rpPathway,
     rpReaction,
     rpCompound
 )
 
-from .Args import (
+from rpcompletion.Args import (
     default_upper_flux_bound,
     default_lower_flux_bound,
     default_maxsubpaths,
@@ -378,6 +378,7 @@ def __rp2paths_compounds_in_cache(
         Reaction rules cache data
     logger: Logger, optional
     """
+    logger.debug(f'infile: {infile}')
 
     try:
         reader = __build_reader(
@@ -437,6 +438,10 @@ def __get_compound_from_cache(
     informations ('inchi', 'inchikey',
     'name', 'formula')
     """
+
+    logger.debug(f'spe_id: {spe_id}')
+    logger.debug(f'smiles: {smiles}')
+
     try:
         inchi = cache.get('cid_strc')[spe_id]['inchi']
     except KeyError:
