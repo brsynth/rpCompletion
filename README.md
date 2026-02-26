@@ -67,8 +67,7 @@ Test can be run with the following commands:
 
 ### Natively
 ```bash
-cd tests
-pytest -v
+python -m pytest
 ```
 
 ## Authors
