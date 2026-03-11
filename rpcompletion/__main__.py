@@ -107,15 +107,6 @@ def check_args(
     logger.debug('Checking arguments...')
     logger.debug('   |--> max_subpaths_filter: '+str(max_subpaths_filter))
     logger.debug('   |--> outdir: '+str(outdir))
-    # out_format = out_format.upper()
-    # if out_format not in FORMATS.keys():
-    #     raise ValueError(
-    #         'Output format {format} is not recognized (choices: {formats})'.format(
-    #             format='\''+out_format+'\'',
-    #             formats=', '.join(['\''+format+'\'' for format in FORMATS.keys()])
-    #         )
-    #     )
-    #     exit(-1)
 
     if max_subpaths_filter < 0:
         raise ValueError('Max number of subpaths cannot be less than 0: '+str(max_subpaths_filter))
