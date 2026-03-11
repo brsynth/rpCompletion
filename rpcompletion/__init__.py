@@ -6,4 +6,4 @@ Created on June 16 2020
 
 from rpcompletion.completion import rp_completion
 
-__all__ = ['rp_completion']
+__all__ = ["rp_completion"]
