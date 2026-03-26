@@ -1,8 +1,16 @@
 # Changelog
 
-## [6.8.0](https://github.com/brsynth/rpCompletion/tree/0.0.1) (2026-03-26)
+## [0.0.2](https://github.com/brsynth/rpCompletion/tree/0.0.2) (2026-03-26)
+
+[Full Changelog](https://github.com/brsynth/rpCompletion/compare/0.0.1...0.0.2)
+
+## [0.0.1](https://github.com/brsynth/rpCompletion/tree/0.0.1) (2026-03-26)
 
 [Full Changelog](https://github.com/brsynth/rpCompletion/compare/50658bfd4faff1bda5fa22b09a6ad7d13c594e8c...0.0.1)
+
+**Merged pull requests:**
+
+- style\(rpcompletion/completion.py\): typo [\#1](https://github.com/brsynth/rpCompletion/pull/1) ([breakthewall](https://github.com/breakthewall))
 
 
 
