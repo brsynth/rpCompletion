@@ -559,8 +559,6 @@ def __read_pathways(
                 for compound in compounds:
                     sto, spe = compound.split(".")
                     transfos[transfo_id][side][spe] = int(sto)
-                    # if sto != '1':
-                    #     print(transfos[transfo_id])
 
     return pathways, transfos
 
