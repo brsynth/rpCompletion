@@ -237,7 +237,6 @@ def __complete_transformations(
                     f'full_transfos[{transfo_id}]["complement"][{rule_id}]: {full_transfos[transfo_id]["complement"][rule_id]}'
                 )
             except KeyError as e:
-                # logger.error(f'Could not find reaction rule {rule_id} in the cache. Are you in the right chemical space (mnx3.1, mnx4.4, rr2026...)?')
                 logger.error(e)
                 exit(1)
 
