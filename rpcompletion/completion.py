@@ -621,7 +621,7 @@ def __build_pathway_combinatorics(
 
         ## ITERATE OVER TRANSFORMATIONS
         # For each transformation of the current pathway
-        # Iterate in retrosynthesis order (reverse)
+        # Iterate in retrosynthesis order (reverse),
         # to better combine all sub-pathways
         for transfo_id in transfos_lst:
 
