@@ -35,8 +35,82 @@ This is the default mode. All cache data are stored into files on disk and loade
 In order to save memory space, cache data can be loaded once in a database (redis) so that the memory space taken is equal to one instance of the cache, whatever the number of processes whic are running. Option can be specified by `--store-mode <db_host>`, where `db_host` is the hostname on which redis server is running. -->
 
 
-## Install
+# Installation Guide
+
+## Overview
+
+`rpcompletion` depends on `rplibs`, which depends on `cobra`, which requires `python-libsbml`.  
+On Apple Silicon (`arm64`) macOS, `python-libsbml` is not available as a native Conda package.
+
+Therefore, installation must be done using an **Intel (`osx-64`) Conda environment under Rosetta**.
+
+---
+
+## General case
+```bash
 conda install -c conda-forge rpcompletion
+```
+
+---
+
+## Apple Silicon macOS (M1/M2/M3)
+
+### 1. Install Rosetta 2
+
+```bash
+softwareupdate --install-rosetta --agree-to-license
+```
+
+### 2. Install rpLibs
+
+```bash
+CONDA_SUBDIR=osx-64 conda install -c conda-forge rpcompletion
+```
+
+Or with mamba:
+
+```bash
+CONDA_SUBDIR=osx-64 mamba install -c conda-forge rpcompletion
+```
+
+### 3. Persist platform setting
+
+```bash
+conda config --env --set subdir osx-64
+```
+
+### 5. Verify installation
+
+```bash
+python -c "import rpcompletion; print('rpcompletion installed successfully')"
+python -c "import cobra; print(cobra.__version__)"
+```
+
+---
+
+## Troubleshooting
+
+### Solver fails on Apple Silicon
+
+Make sure you are using:
+
+```bash
+CONDA_SUBDIR=osx-64
+```
+
+### Wrong architecture environment
+
+Check:
+
+```bash
+conda config --show subdir
+```
+
+Expected output:
+
+```bash
+subdir: osx-64
+```
 
 ## Run
 
