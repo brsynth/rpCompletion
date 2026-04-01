@@ -4,7 +4,7 @@ from os import path as os_path
 
 ## INFOS ##
 package = "rpcompletion"
-descr = "Libraries for rpTools"
+descr = "Completion of pathways from retrosynthesis"
 url = "https://github.com/brsynth/rpCompletion"
 authors = "Joan Hérisson, Melchior du Lac, Thomas Duigou"
 corr_author = "joan.herisson@univ-evry.fr"
