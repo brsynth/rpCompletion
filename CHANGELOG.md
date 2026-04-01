@@ -1,8 +1,16 @@
 # Changelog
 
+## [6.8.2](https://github.com/brsynth/rpCompletion/tree/6.8.2) (2026-04-01)
+
+[Full Changelog](https://github.com/brsynth/rpCompletion/compare/6.8.1...6.8.2)
+
 ## [6.8.1](https://github.com/brsynth/rpCompletion/tree/6.8.1) (2026-03-26)
 
 [Full Changelog](https://github.com/brsynth/rpCompletion/compare/6.8.0...6.8.1)
+
+**Merged pull requests:**
+
+- trigger [\#3](https://github.com/brsynth/rpCompletion/pull/3) ([breakthewall](https://github.com/breakthewall))
 
 ## [6.8.0](https://github.com/brsynth/rpCompletion/tree/6.8.0) (2026-03-26)
 
