@@ -1,7 +1,5 @@
 from argparse import ArgumentParser
 
-from brs_utils import add_logger_args
-
 default_upper_flux_bound = 10000
 default_lower_flux_bound = -default_upper_flux_bound
 default_maxsubpaths = 10
@@ -9,21 +7,7 @@ default_cofactors = None
 default_cspace = "rr2026"
 
 
-def build_args_parser(
-    prog: str, description: str = "", epilog: str = ""
-) -> ArgumentParser:
-
-    parser = ArgumentParser(prog=prog, description=description, epilog=epilog)
-
-    # Build Parser with rptools common arguments
-    parser = add_arguments(parser)
-
-    return parser
-
-
 def add_arguments(parser: ArgumentParser) -> ArgumentParser:
-    # Add arguments related to the logger
-    parser = add_logger_args(parser)
 
     parser.add_argument(
         "rp2_metnet", type=str, help="Retrosynthesis network provided by RetroPath2.0"
