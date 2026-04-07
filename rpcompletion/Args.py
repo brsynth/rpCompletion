@@ -9,6 +9,18 @@ default_cofactors = None
 default_cspace = "rr2026"
 
 
+def build_args_parser(
+    prog: str, description: str = "", epilog: str = ""
+) -> ArgumentParser:
+
+    parser = ArgumentParser(prog=prog, description=description, epilog=epilog)
+
+    # Build Parser with rptools common arguments
+    parser = add_arguments(parser)
+
+    return parser
+
+
 def add_arguments(parser: ArgumentParser) -> ArgumentParser:
     # Add arguments related to the logger
     parser = add_logger_args(parser)

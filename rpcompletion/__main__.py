@@ -6,10 +6,10 @@ from logging import (
 )
 from colored import fg, attr
 from rr_cache import rrCache
-from rplibs import build_args_parser
-from rpcompletion import rp_completion
 from brs_utils import init
-from rpextractsink._version import __version__
+from .Args import build_args_parser
+from .completion import rp_completion
+from ._version import __version__
 
 
 def _cli():
