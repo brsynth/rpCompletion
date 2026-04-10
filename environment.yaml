@@ -5,7 +5,7 @@ dependencies:
   - python=3.11
   - pandas
   - rdkit
-  - rr_cache
+  - rr_cache>=3.6.3
   - brs_utils>=1.26.0
   - rxn_rebuild
   - rplibs
