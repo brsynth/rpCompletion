@@ -6,6 +6,6 @@ dependencies:
   - pandas
   - rdkit
   - rr_cache
-  - brs_utils
+  - brs_utils>=1.6.0
   - rxn_rebuild
   - rplibs
