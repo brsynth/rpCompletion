@@ -18,7 +18,7 @@ from ._version import __version__
 def _cli():
     parser = build_args_parser(
         prog="rpcompletion",
-        version = __version__,
+        version=__version__,
         description="Parse RP2 pathways to generate rpSBML collection of unique and complete (cofactors) pathways",
         m_add_args=add_arguments,
     )
