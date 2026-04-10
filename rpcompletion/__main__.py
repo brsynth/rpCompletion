@@ -6,20 +6,25 @@ from logging import (
 )
 from colored import fg, attr
 from rr_cache import rrCache
-from rplibs import build_args_parser
-from rpcompletion import rp_completion
-from brs_utils import init
-from rpextractsink._version import __version__
+from brs_utils import (
+    init as init_logger,
+    build_args_parser,
+)
+from .Args import add_arguments
+from .completion import rp_completion
+from ._version import __version__
 
 
 def _cli():
     parser = build_args_parser(
         prog="rpcompletion",
+        version=__version__,
         description="Parse RP2 pathways to generate rpSBML collection of unique and complete (cofactors) pathways",
+        m_add_args=add_arguments,
     )
     args = parser.parse_args()
 
-    logger = init(parser, args, __version__)
+    logger = init_logger(parser, args, __version__)
 
     logger.debug("Parameters")
     logger.debug("   |--> rp2_metnet: " + str(args.rp2_metnet))
