@@ -1,8 +1,16 @@
 # Changelog
 
+## [6.8.4](https://github.com/brsynth/rpCompletion/tree/6.8.4) (2026-04-10)
+
+[Full Changelog](https://github.com/brsynth/rpCompletion/compare/6.8.3...6.8.4)
+
 ## [6.8.3](https://github.com/brsynth/rpCompletion/tree/6.8.3) (2026-04-01)
 
 [Full Changelog](https://github.com/brsynth/rpCompletion/compare/6.8.2...6.8.3)
+
+**Merged pull requests:**
+
+- Add license [\#5](https://github.com/brsynth/rpCompletion/pull/5) ([breakthewall](https://github.com/breakthewall))
 
 ## [6.8.2](https://github.com/brsynth/rpCompletion/tree/6.8.2) (2026-04-01)
 
