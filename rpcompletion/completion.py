@@ -1,6 +1,7 @@
-from csv import reader as csv_reader
+from csv import reader as csv_reader, Sniffer as csv_Sniffer, Error as csv_Error
 from itertools import product as itertools_product
 from io import StringIO
+from os import path as os_path
 import pandas as pd
 from typing import List, Dict, Tuple
 from logging import Logger, getLogger
@@ -249,11 +250,13 @@ def __parse_cofactors(cofile, logger=getLogger(__name__)):
     # as a list of <ID>
     """Parse the cofactors file and return a list of cofactors IDs."""
     cofactors = []
-    with open(cofile, "r") as f:
-        next(f)  # Skip header line
-        for line in f:
-            parts = line.strip().split("\t")
-            cofactors.append(parts[0])
+    separator = __infer_separator_from_extension(cofile, default="\t")
+    with open(cofile, "r", newline="") as f:
+        reader = csv_reader(f, delimiter=separator)
+        next(reader, None)  # Skip header line
+        for parts in reader:
+            if parts:
+                cofactors.append(parts[0])
     logger.debug(f"Read cofactors: {cofactors}")
     return cofactors
 
@@ -301,8 +304,57 @@ def __build_smiles(side: Dict, logger: Logger = getLogger(__name__)) -> str:
     return result
 
 
+def __infer_separator_from_extension(path: str, default: str = None) -> str:
+    """Infer file separator from the file extension."""
+    if not isinstance(path, str):
+        return default
+    ext = os_path.splitext(path)[1].lower()
+    if ext in (".tsv", ".tab"):
+        return "\t"
+    if ext == ".csv":
+        return ","
+    return default
+
+
+def __infer_separator_from_content(path: str, default: str = ",") -> str:
+    """Infer file separator from the file content for unknown extensions."""
+    if isinstance(path, bytes):
+        try:
+            sample = path.decode("utf-8")
+        except UnicodeDecodeError:
+            return default
+    else:
+        try:
+            with open(path, "r", newline="", encoding="utf-8") as f:
+                sample = f.read(8192)
+        except (FileNotFoundError, OSError):
+            return default
+    if not sample:
+        return default
+    try:
+        dialect = csv_Sniffer().sniff(sample, delimiters=[",", "\t", ";", "|"])
+        return dialect.delimiter
+    except csv_Error:
+        counts = {
+            ",": sample.count(","),
+            "\t": sample.count("\t"),
+            ";": sample.count(";"),
+            "|": sample.count("|"),
+        }
+        best = max(counts, key=counts.get)
+        return best if counts[best] > 0 else default
+
+
+def __infer_separator(path: str, default: str = ",") -> str:
+    """Infer the separator using extension and file content."""
+    sep = __infer_separator_from_extension(path, default=None)
+    if sep is not None:
+        return sep
+    return __infer_separator_from_content(path, default=default)
+
+
 def __build_reader(
-    path: str, delimiter: str = ",", logger: Logger = getLogger(__name__)
+    path: str, delimiter: str = None, logger: Logger = getLogger(__name__)
 ) -> "csv_reader":
     """Build a CSV reader object
 
@@ -318,11 +370,14 @@ def __build_reader(
     -------
     CSV reader object
     """
+    if delimiter is None:
+        delimiter = __infer_separator(path)
+    logger.debug(f"path: {path}, delimiter: {delimiter}")
     if isinstance(path, bytes):
         reader = csv_reader(StringIO(path.decode("utf-8")), delimiter=delimiter)
     else:
         try:
-            reader = csv_reader(open(path, "r"), delimiter=delimiter)
+            reader = csv_reader(open(path, "r", newline=""), delimiter=delimiter)
         except FileNotFoundError:
             logger.error("Could not read file: " + str(path))
             return None
@@ -351,13 +406,14 @@ def __rp2paths_compounds_in_cache(
     logger.debug(f"infile: {infile}")
 
     try:
-        reader = __build_reader(path=infile, delimiter="\t", logger=logger)
+        reader = __build_reader(path=infile, delimiter=None, logger=logger)
         if reader is None:
             logger.error(f"File not found: {infile}")
             return None
         for row in reader:
             spe_id = row[0]
             smiles = row[1]
+            logger.debug(f"spe_id: {spe_id}, smiles: {smiles}")
             cmpd = __get_compound_from_cache(
                 spe_id=spe_id, smiles=smiles, cache=cache, logger=logger
             )
@@ -491,15 +547,34 @@ def __read_sink(infile: str, logger: Logger = getLogger(__name__)) -> List[str]:
     List of chemical species ID that are in the sink
     """
 
-    sink_molecules = set()
-    reader = __build_reader(path=infile, logger=logger)
-    if reader is None:
+    separator = __infer_separator(infile)
+    try:
+        df = pd.read_csv(infile, sep=separator)
+    except (pd.errors.EmptyDataError, FileNotFoundError) as e:
         logger.warning(
-            f"The sink file {infile} is empty or not found. Continuing without sink molecules."
+            f"The sink file {infile} is empty or not found. Continuing without sink molecules: {e}"
         )
         return []
-    for row in reader:
-        sink_molecules.add(row[0])
+
+    if "ID" in df.columns:
+        column = "Name"
+    elif "Name" in df.columns:
+        column = "ID"
+    else:
+        logger.warning(f"The sink file {infile} has no 'Name' or 'ID' header column.")
+        return []
+
+    sink_molecules = set()
+    for value in df[column]:
+        if pd.notna(value):
+            entry = str(value).strip()
+            if not entry:
+                continue
+            # Some IDs might be separated by dots, e.g. "MNXM1.MNXM01"
+            for part in entry.split("."):
+                part = part.strip()
+                if part:
+                    sink_molecules.add(part)
 
     logger.debug(list(sink_molecules))
 
@@ -525,10 +600,12 @@ def __read_pathways(
     """
 
     try:
-        df = pd.read_csv(infile)
+        df = pd.read_csv(infile, sep=__infer_separator(infile))
     except (pd.errors.EmptyDataError, FileNotFoundError) as e:
         logger.error(f"File {infile} is empty or does not exist: {e}")
         return {}, {}
+    
+    logger.debug(f"Pathways dataframe read from {infile}: {df}")
 
     check = __check_pathways(df)
     if not check:
@@ -808,10 +885,11 @@ def __build_all_pathways(
                 ]
                 if target_id != []:
                     target_id = target_id[0]
+                    pathway.set_target_id(target_id)
                 else:
                     target_id = None
                 logger.debug(f"rxn: {rxn._to_dict()}")
-                pathway.add_reaction(rxn=rxn, target_id=target_id)
+                pathway.add_reaction(rxn=rxn)
 
                 ## TRUNK SPECIES
                 pathway.add_species_group(
