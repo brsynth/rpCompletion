@@ -4,7 +4,7 @@ default_upper_flux_bound = 10000
 default_lower_flux_bound = -default_upper_flux_bound
 default_maxsubpaths = 10
 default_cofactors = None
-default_cspace = "rr2026"
+default_cspace = "rr2026-v3.1.0"
 
 
 def add_arguments(parser: ArgumentParser) -> ArgumentParser:
