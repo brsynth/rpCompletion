@@ -604,7 +604,7 @@ def __read_pathways(
     except (pd.errors.EmptyDataError, FileNotFoundError) as e:
         logger.error(f"File {infile} is empty or does not exist: {e}")
         return {}, {}
-    
+
     logger.debug(f"Pathways dataframe read from {infile}: {df}")
 
     check = __check_pathways(df)

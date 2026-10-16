@@ -62,17 +62,11 @@ class Test_rpCompletion(TestCase):
             "003_0131",
             "003_0261",
         ]
-    
+
     def test_infer_separator_from_extension(self):
-        self.assertEqual(
-            infer_separator_from_extension("file.csv"), ","
-        )
-        self.assertEqual(
-            infer_separator_from_extension("file.tsv"), "\t"
-        )
-        self.assertEqual(
-            infer_separator_from_extension("file.txt"), None
-        )
+        self.assertEqual(infer_separator_from_extension("file.csv"), ",")
+        self.assertEqual(infer_separator_from_extension("file.tsv"), "\t")
+        self.assertEqual(infer_separator_from_extension("file.txt"), None)
         self.assertEqual(
             infer_separator_from_extension("file.csv", default=";"),
             ",",
@@ -98,24 +92,14 @@ class Test_rpCompletion(TestCase):
             tmp_semicolon.write("col1;col2;col3\n1;2;3\n4;5;6")
             tmp_semicolon_path = tmp_semicolon.name
 
-        self.assertEqual(
-            infer_separator_from_content(tmp_csv_path), ","
-        )
-        self.assertEqual(
-            infer_separator_from_content(tmp_tsv_path), "\t"
-        )
-        self.assertEqual(
-            infer_separator_from_content(tmp_semicolon_path), ";"
-        )
+        self.assertEqual(infer_separator_from_content(tmp_csv_path), ",")
+        self.assertEqual(infer_separator_from_content(tmp_tsv_path), "\t")
+        self.assertEqual(infer_separator_from_content(tmp_semicolon_path), ";")
 
     def test_infer_separator(self):
         # Test with known extensions
-        self.assertEqual(
-            infer_separator("file.csv"), ","
-        )
-        self.assertEqual(
-            infer_separator("file.tsv"), "\t"
-        )
+        self.assertEqual(infer_separator("file.csv"), ",")
+        self.assertEqual(infer_separator("file.tsv"), "\t")
         # Test with unknown extension but content-based inference
         import tempfile
 
@@ -123,15 +107,11 @@ class Test_rpCompletion(TestCase):
             tmp_csv.write("col1,col2,col3\n1,2,3\n4,5,6")
             tmp_csv_path = tmp_csv.name
 
-        self.assertEqual(
-            infer_separator(tmp_csv_path), ","
-        )
+        self.assertEqual(infer_separator(tmp_csv_path), ",")
 
     def test_infer_separator_with_invalid_file(self):
         # Test with a non-existent file
-        self.assertEqual(
-            infer_separator("non_existent_file.csv"), ","
-        )
+        self.assertEqual(infer_separator("non_existent_file.csv"), ",")
 
     def test_read_sink(self):
         sink_molecules = read_sink(self.sink, logger=self.logger)
