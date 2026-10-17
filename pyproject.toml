@@ -1,0 +1,21 @@
+[tool.ruff.lint]
+# Explicit rule set matching what the lint CI actually found and we fixed,
+# so results stay reproducible regardless of which ruff version's own
+# (quite broad, and occasionally shifting) defaults happen to be installed.
+select = [
+    "B006", "B008",            # flake8-bugbear: mutable/function-call defaults
+    "I001",                    # isort: unsorted import block
+    "N999",                    # pep8-naming: invalid module name
+    "PERF102",                 # perflint: iterate .values() instead of .items()
+    "PLR1722", "PLR1733",      # pylint refactor: sys.exit(), dict key re-lookup
+    "RET501",                  # flake8-return: unnecessary `return None`
+    "RUF013", "RUF017",        # ruff: implicit Optional, quadratic list sum
+    "SIM113", "SIM115", "SIM118",  # flake8-simplify
+    "UP006", "UP009", "UP035", # pyupgrade: builtin generics, deprecated typing imports
+    "W605",                    # pycodestyle: invalid escape sequence
+]
+
+[tool.ruff.lint.per-file-ignores]
+# "Args" is part of the public import path (`rpcompletion.Args`); renaming
+# the module to satisfy pep8-naming would be a breaking API change.
+"rpcompletion/Args.py" = ["N999"]

@@ -4,18 +4,35 @@ Created on Jul 15 2020
 @author: Joan Hérisson
 """
 
-from rr_cache import rrCache
-from rplibs import rpPathway
-from rpcompletion import rp_completion
-
 # from rptools.rpcompletion.rpCompletion import (
 #     # build_side_rxn,
 #     # rp2paths_to_dict
 # )
+import os
+from json import load as json_load
 from os import path as os_path
 from unittest import TestCase
+
 from brs_utils import (
     create_logger,
+)
+from rplibs import rpPathway
+from rr_cache import rrCache
+
+from rpcompletion.completion import (
+    __infer_separator as infer_separator,
+)
+from rpcompletion.completion import (
+    __infer_separator_from_content as infer_separator_from_content,
+)
+from rpcompletion.completion import (
+    __infer_separator_from_extension as infer_separator_from_extension,
+)
+from rpcompletion.completion import (
+    __read_sink as read_sink,
+)
+from rpcompletion.completion import (
+    rp_completion,
 )
 
 
@@ -32,6 +49,7 @@ class Test_rpCompletion(TestCase):
         )
         self.rp2_pathways = os_path.join(self.data_path, "1-rp2_metnet.csv")
         self.sink = os_path.join(self.data_path, "2-sink.csv")
+        self.sink_ids = os_path.join(self.data_path, "refs", "sink_ids.json")
         self.rp2paths_compounds = os_path.join(
             self.data_path, "3-rp2paths_compounds.tsv"
         )
@@ -54,6 +72,82 @@ class Test_rpCompletion(TestCase):
             "003_0261",
         ]
 
+    def test_infer_separator_from_extension(self):
+        self.assertEqual(infer_separator_from_extension("file.csv"), ",")
+        self.assertEqual(infer_separator_from_extension("file.tsv"), "\t")
+        self.assertEqual(infer_separator_from_extension("file.txt"), None)
+        self.assertEqual(
+            infer_separator_from_extension("file.csv", default=";"),
+            ",",
+        )
+        self.assertEqual(
+            infer_separator_from_extension("file.unknown", default=";"),
+            ";",
+        )
+
+    def test_infer_separator_from_content(self):
+        # Create temporary files with different separators
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp_csv:
+            tmp_csv.write("col1,col2,col3\n1,2,3\n4,5,6")
+            tmp_csv_path = tmp_csv.name
+
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp_tsv:
+            tmp_tsv.write("col1\tcol2\tcol3\n1\t2\t3\n4\t5\t6")
+            tmp_tsv_path = tmp_tsv.name
+
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp_semicolon:
+            tmp_semicolon.write("col1;col2;col3\n1;2;3\n4;5;6")
+            tmp_semicolon_path = tmp_semicolon.name
+
+        self.assertEqual(infer_separator_from_content(tmp_csv_path), ",")
+        self.assertEqual(infer_separator_from_content(tmp_tsv_path), "\t")
+        self.assertEqual(infer_separator_from_content(tmp_semicolon_path), ";")
+
+    def test_infer_separator(self):
+        # Test with known extensions
+        self.assertEqual(infer_separator("file.csv"), ",")
+        self.assertEqual(infer_separator("file.tsv"), "\t")
+        # Test with unknown extension but content-based inference
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp_csv:
+            tmp_csv.write("col1,col2,col3\n1,2,3\n4,5,6")
+            tmp_csv_path = tmp_csv.name
+
+        self.assertEqual(infer_separator(tmp_csv_path), ",")
+
+    def test_infer_separator_with_invalid_file(self):
+        # Test with a non-existent file
+        self.assertEqual(infer_separator("non_existent_file.csv"), ",")
+
+    def test_read_sink(self):
+        sink_molecules = read_sink(self.sink, logger=self.logger)
+        with open(self.sink_ids, "r", encoding="utf-8") as f:
+            expected_sink = set(json_load(f))
+        self.assertEqual(set(sink_molecules), expected_sink)
+
+    def test_read_sink_splits_dot_ids(self):
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(
+            mode="w+",
+            suffix=".csv",
+            delete=False,
+            encoding="utf-8",
+        ) as tmp:
+            tmp.write("Name\n")
+            tmp.write("MNXM1.MNXM2\n")
+            tmp.write("MNXM3\n")
+            tmp_path = tmp.name
+
+        try:
+            sink_molecules = read_sink(tmp_path, logger=self.logger)
+            self.assertEqual(set(sink_molecules), {"MNXM1", "MNXM2", "MNXM3"})
+        finally:
+            os.remove(tmp_path)
+
     def test_rp_completion(self):
         pathways = rp_completion(
             rp2_metnet=self.rp2_pathways,
@@ -70,11 +164,6 @@ class Test_rpCompletion(TestCase):
         for pathway_id in self.ref_files:
             ref_file = os_path.join(self.output_path, f"rp_{pathway_id}.xml")
             ref_pathway = rpPathway(ref_file)
-            print()
-            print(pathways[f"rp_{pathway_id}"])
-            print()
-            print(ref_pathway)
-            print()
             self.assertEqual(pathways[f"rp_{pathway_id}"], ref_pathway)
 
     def test_rp_completion_wo_cofactors(self):
