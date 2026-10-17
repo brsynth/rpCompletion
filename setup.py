@@ -1,6 +1,6 @@
-# coding: utf-8
-from setuptools import setup, find_packages
 from os import path as os_path
+
+from setuptools import find_packages, setup
 
 ## INFOS ##
 package = "rpcompletion"
@@ -30,7 +30,7 @@ def get_version():
         if line.startswith("##"):
             from re import search
 
-            m = search("\[(.+)\]", line)
+            m = search(r"\[(.+)\]", line)
             if m:
                 return m.group(1)
 

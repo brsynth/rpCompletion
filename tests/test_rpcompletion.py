@@ -4,26 +4,35 @@ Created on Jul 15 2020
 @author: Joan Hérisson
 """
 
-from json import load as json_load
-from rr_cache import rrCache
-from rplibs import rpPathway
-from rpcompletion.completion import (
-    rp_completion,
-    __infer_separator as infer_separator,
-    __infer_separator_from_extension as infer_separator_from_extension,
-    __infer_separator_from_content as infer_separator_from_content,
-    __read_sink as read_sink,
-)
-
 # from rptools.rpcompletion.rpCompletion import (
 #     # build_side_rxn,
 #     # rp2paths_to_dict
 # )
 import os
+from json import load as json_load
 from os import path as os_path
 from unittest import TestCase
+
 from brs_utils import (
     create_logger,
+)
+from rplibs import rpPathway
+from rr_cache import rrCache
+
+from rpcompletion.completion import (
+    __infer_separator as infer_separator,
+)
+from rpcompletion.completion import (
+    __infer_separator_from_content as infer_separator_from_content,
+)
+from rpcompletion.completion import (
+    __infer_separator_from_extension as infer_separator_from_extension,
+)
+from rpcompletion.completion import (
+    __read_sink as read_sink,
+)
+from rpcompletion.completion import (
+    rp_completion,
 )
 
 

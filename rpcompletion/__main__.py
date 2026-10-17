@@ -1,18 +1,28 @@
-from os import path as os_path, mkdir as os_mkdir
+import sys
 from logging import (
-    StreamHandler,
     Logger,
+    StreamHandler,
     getLogger,
 )
-from colored import fg, attr
-from rr_cache import rrCache
+from os import mkdir as os_mkdir
+from os import path as os_path
+
 from brs_utils import (
-    init as init_logger,
     build_args_parser,
 )
+from brs_utils import (
+    init as init_logger,
+)
+from colored import attr, fg
+from rr_cache import rrCache
+
+from ._version import __version__
 from .Args import add_arguments
 from .completion import rp_completion
-from ._version import __version__
+
+# Module-level singleton, used as the default logger for check_args()
+# (avoids calling getLogger() in an argument default, which is only evaluated once).
+_default_logger = getLogger(__name__)
 
 
 def _cli():
@@ -82,9 +92,7 @@ def _cli():
     logger.info("{color}{outdir}\n".format(color=fg("grey_70"), outdir=args.outdir))
 
 
-def check_args(
-    max_subpaths_filter: int, outdir: str, logger: Logger = getLogger(__name__)
-):
+def check_args(max_subpaths_filter: int, outdir: str, logger: Logger = _default_logger):
     logger.debug("Checking arguments...")
     logger.debug("   |--> max_subpaths_filter: " + str(max_subpaths_filter))
     logger.debug("   |--> outdir: " + str(outdir))
@@ -100,7 +108,7 @@ def check_args(
             + outdir
             + " already exists and is actually file. Stopping the process..."
         )
-        exit(-1)
+        sys.exit(-1)
 
 
 if __name__ == "__main__":
